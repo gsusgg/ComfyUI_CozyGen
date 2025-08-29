@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CozyGen Gallery</title>
+    <link rel="stylesheet" href="/cozygen/style.css">
+</head>
+<body>
+    <header>
+        <h1>CozyGen: ComfyUI Remote</h1>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-tab">Generate</a>
+            <a href="gallery.html" class="nav-tab active">Gallery</a>
+        </nav>
+    </header>
+    <main>
+        <div id="gallery-controls">
+            <button id="up-button" style="display: none;">Up a directory</button>
+            <div id="breadcrumb-container"></div>
+        </div>
+        <div id="gallery-container"></div>
+    </main>
+    <script src="/cozygen/gallery.js"></script>
+
+    <!-- Image Modal Structure (for gallery) -->
+    <div id="gallery-image-modal" class="modal">
+        <span class="close-button">&times;</span>
+        <img class="modal-content" id="gallery-modal-image">
+        <div class="modal-prompt-text"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,369 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif; /* Added Roboto for a modern look */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh; /* Ensure body takes full viewport height */
+}
+
+header {
+    background-color: #1e1e1e;
+    width: 100%;
+    padding: 1rem 0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    color: #bb86fc; /* A nice accent color */
+    margin: 0;
+    font-size: 2rem;
+}
+
+main {
+    flex-grow: 1; /* Allow main content to take available space */
+    padding: 1.5rem;
+    max-width: 800px; /* Limit width for better readability */
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+#workflow-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#workflow-dropdown {
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 1rem;
+    appearance: none; /* Remove default dropdown arrow */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%2C197.3L159.3%2C69.6c-3.7-3.7-9.7-3.7-13.4%2C0L5.4%2C197.3c-3.7%2C3.7-3.7%2C9.7%2C0%2C13.4l13.4%2C13.4c3.7%2C3.7%2C9.7%2C3.7%2C13.4%2C0l110.7-110.7l110.7%2C110.7c3.7%2C3.7%2C9.7%2C3.7%2C13.4%2C0l13.4-13.4C290.7%2C207%2C290.7%2C201%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%, 0 0;
+    background-size: 0.65em auto, 100%;
+}
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#controls label {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    color: #bb86fc; /* Match header accent */
+}
+
+/* Styling for range inputs (the "boring date fields") */
+input[type="range"] {
+    -webkit-appearance: none; /* Hides the default slider */
+    width: 100%; /* Full-width */
+    height: 8px; /* Specify a height for the slider track */
+    background: #333; /* Dark track */
+    border-radius: 5px;
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for hover effect) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+}
+
+input[type="range"]:hover {
+    opacity: 1; /* Fully opaque on hover */
+}
+
+/* The slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 20px; /* Set a specific slider handle width */
+    height: 20px; /* Slider handle height */
+    border-radius: 50%; /* Make it a circle */
+    background: #03dac6; /* Greenish-blue color */
+    cursor: pointer; /* Cursor on hover */
+    margin-top: -6px; /* Center the thumb vertically */
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px; /* Set a specific slider handle width */
+    height: 20px; /* Slider handle height */
+    border-radius: 50%; /* Make it a circle */
+    background: #03dac6; /* Greenish-blue color */
+    cursor: pointer; /* Cursor on hover */
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+input[type="text"],
+select { /* Added select here */
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+.buttons-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    background-color: #1e88e5; /* Blue for primary action */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #039be5;
+}
+
+#view-gallery-button {
+    background-color: #03dac6; /* Greenish-blue for secondary action */
+}
+
+#view-gallery-button:hover {
+    background-color: #00bfa5;
+}
+
+#preview {
+    text-align: center;
+    margin-top: 2rem;
+    border: 1px dashed #333;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 200px; /* Placeholder height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: italic;
+    color: #888;
+}
+
+#preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    main {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .buttons-container {
+        flex-direction: column;
+    }
+}
+
+/* Image Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+    /* Removed display: flex; from here */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain; /* Ensure the image fits within the modal */
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Main Navigation Tabs */
+.main-nav {
+    display: flex;
+    justify-content: center;
+    background-color: #2a2a2a;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.nav-tab {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: #e0e0e0;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 5px;
+    margin: 0 0.5rem;
+}
+
+.nav-tab:hover {
+    background-color: #3a3a3a;
+    color: #bb86fc;
+}
+
+.nav-tab.active {
+    background-color: #1e88e5; /* Primary button color */
+    color: white;
+    cursor: default;
+}
+
+.nav-tab.active:hover {
+    background-color: #1e88e5; /* Keep same color on hover for active */
+    color: white;
+}
+
+/* Gallery styles (existing, just moved for organization) */
+#gallery-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(256px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+}
+
+
+
+.gallery-item {
+    background-color: #232323;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.gallery-item .metadata {
+    padding: 0.5rem;
+}
+
+/* Styles for Seed Randomize Checkbox */
+.randomize-seed-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: -0.5rem; /* Adjust as needed to align with the input */
+    margin-bottom: 1rem;
+}
+
+.randomize-seed-container input[type="checkbox"] {
+    /* Basic styling for checkbox */
+    width: 1.2em;
+    height: 1.2em;
+    accent-color: #bb86fc; /* Use accent color for checkbox */
+}
+
+.randomize-seed-container label {
+    font-weight: normal; /* Override bold from general label style */
+    color: #e0e0e0; /* Standard text color */
+    margin-bottom: 0; /* Remove bottom margin */
+}
+
+/* Styles for Range Input with Number Input */
+.range-input-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between elements */
+    width: 100%;
+}
+
+.range-input-container input[type="range"] {
+    flex-grow: 1; /* Allow slider to take available space */
+    margin-bottom: 0; /* Remove any default margin */
+}
+
+.range-input-container input[type="number"] {
+    width: 80px; /* Fixed width for number input */
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 1rem;
+    text-align: center;
+    -moz-appearance: textfield; /* Hide Firefox spinner */
+}
+
+/* Hide Webkit (Chrome, Safari) number input arrows */
+.range-input-container input[type="number"]::-webkit-outer-spin-button,
+.range-input-container input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* The value display span is now redundant, but keeping its style in case it's used elsewhere or for future changes */
+.range-value-display {
+    min-width: 40px; /* Ensure enough space for value */
+    text-align: right;
+    font-weight: bold;
+    color: #03dac6; /* Accent color for the value */
+}
+
+/* New styles for control grouping */
+.control-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start; /* Align tops of controls */
+}
+
+.control-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Space between label and input */
+    flex: 1; /* Allows wrappers in a group to share space equally */
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.control-wrapper.full-width {
+    flex-basis: 100%; /* Ensures non-grouped items take full width */
+}
