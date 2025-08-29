@@ -17,10 +17,22 @@ CozyGen is a custom node for ComfyUI that provides a sleek, mobile-friendly web 
 *   **Seamless Integration:** Works directly with your existing ComfyUI setup, leveraging its core functionalities.
 
 ## 📸 Screenshots / Demos
+Mobile-first design:
 
-<img width="744" height="1267" alt="Image" src="https://github.com/user-attachments/assets/6f121edd-5cc0-4b25-b173-2cbc97761bec" />
+<p align="center">
+  <img width="744" height="1267" alt="Image" src="https://github.com/user-attachments/assets/6f121edd-5cc0-4b25-b173-2cbc97761bec" />
+</p>
 
-<img width="1514" height="865" alt="Image" src="https://github.com/user-attachments/assets/c656b73b-8773-4e5f-af9a-83249701f384" />
+Adapts to browser size:
+
+<p align="center">
+  <img width="1514" height="865" alt="Image" src="https://github.com/user-attachments/assets/c656b73b-8773-4e5f-af9a-83249701f384" />
+</p>
+
+Custom Node adapts to the string/int/float/dropdown they are connected to:
+<p align="center">
+<img width="1745" height="920" alt="Image" src="https://github.com/user-attachments/assets/52d00ee5-42ef-4a5e-a39e-52b6ff80f852" />
+</p>
 
 ## 📦 Installation
 
