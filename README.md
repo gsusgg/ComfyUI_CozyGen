@@ -2,6 +2,10 @@
 
 ![ComfyUI Custom Node](https://img.shields.io/badge/ComfyUI-Custom%20Node-blue.svg)
 
+## DISCLAIMER
+
+This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but wanted to share a working LLM assisted projected. Everything AFTER this disclaimer is 99% made by an LLM. I just wanted to make dumb cat pictures with my desktop ComfyUI from my phone, so now this exists.
+
 ## ✨ Overview
 
 CozyGen is a custom node for ComfyUI that provides a sleek, mobile-friendly web interface to remotely control your ComfyUI server. Designed for ease of use, it allows you to load pre-defined workflows, dynamically adjust parameters, and generate stunning images from any device with a web browser. Say goodbye to the desktop interface and hello to on-the-go creativity!
