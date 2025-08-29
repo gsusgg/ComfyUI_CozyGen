@@ -60,6 +60,10 @@ pip install -r requirements.txt
 
 After completing the above steps, restart your ComfyUI server to load the new custom node and its web interface.
 
+### 4. (Optional) ComfyUI --listen
+
+If you want to use this as a remote to your machine running ComfyUI on the local network, add the "--listen" flag to your ComfyUI startup.
+
 ## 🚀 Usage
 
 ### 1. Prepare Your Workflow
