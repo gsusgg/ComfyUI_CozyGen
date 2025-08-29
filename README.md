@@ -18,19 +18,21 @@ CozyGen is a custom node for ComfyUI that provides a sleek, mobile-friendly web 
 
 ## 📸 Screenshots / Demos
 
-*(Add screenshots or a GIF here to showcase the UI and features)*
+<img width="744" height="1267" alt="Image" src="https://github.com/user-attachments/assets/6f121edd-5cc0-4b25-b173-2cbc97761bec" />
+
+<img width="1514" height="865" alt="Image" src="https://github.com/user-attachments/assets/c656b73b-8773-4e5f-af9a-83249701f384" />
 
 ## 📦 Installation
 
 Follow these steps to get CozyGen up and running with your ComfyUI instance.
 
-### 1. Place the Custom Node
+### 1. Clone the Repository
 
-Navigate to your ComfyUI installation directory and place the `ComfyUI_CozyGen` folder inside the `custom_nodes` directory.
+Navigate to your ComfyUI `custom_nodes` directory and clone this repository:
 
 ```bash
-cd /path/to/your/ComfyUI
-mv /path/to/downloaded/ComfyUI_CozyGen custom_nodes/
+cd /path/to/your/ComfyUI/custom_nodes
+git clone https://github.com/gsusgg/ComfyUI_CozyGen.git
 ```
 
 ### 2. Install Python Dependencies
@@ -55,7 +57,7 @@ In ComfyUI, create or open a workflow that you want to control remotely. For eac
 *   Add a `CozyGenDynamicInput` node and connect its output to the desired input on another node.
 *   Configure the `CozyGenDynamicInput` node's properties (e.g., `param_name`, `param_type`, `default_value`, `min_value`, `max_value`, `add_randomize_toggle`).
 *   Add a `CozyGenOutput` node at the end of your workflow to save the generated image and send real-time previews to the web UI.
-*   Save your workflow as a JSON file in the `ComfyUI_CozyGen/workflows/` directory.
+*   *IMPORTANT* When exporting your workflow, export with API into the `ComfyUI_CozyGen/workflows/` directory.
 
 ### 2. Access the Web UI
 
@@ -77,7 +79,7 @@ http://<your-comfyui-ip>:8188/cozygen
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you have ideas for new features, improvements, or bug fixes, please open an issue or submit a pull request on the GitHub repository.
+I do not plan to update this further, but wanted to share what I had. Feel free to take it and update it on your own!
 
 ## 📄 License
 
