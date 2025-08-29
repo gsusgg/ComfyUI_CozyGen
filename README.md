@@ -38,6 +38,11 @@ Custom Node adapts to the string/int/float/dropdown they are connected to:
 <img width="1745" height="920" alt="Image" src="https://github.com/user-attachments/assets/52d00ee5-42ef-4a5e-a39e-52b6ff80f852" />
 </p>
 
+A gallery tab that can navigate your ComfyUI output folder. Click on the path in the top left to go back to the base output folder.
+<p align="center">
+<img width="1532" height="692" alt="Image" src="https://github.com/user-attachments/assets/1951a027-bf49-48f2-b1d5-e9e85c3351a8" />
+</p>
+
 ## 📦 Installation
 
 Follow these steps to get CozyGen up and running with your ComfyUI instance.
