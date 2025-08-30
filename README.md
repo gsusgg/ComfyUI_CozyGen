@@ -14,6 +14,7 @@ CozyGen is a custom node for ComfyUI that provides a sleek, mobile-friendly web 
 
 *   **Modern & Intuitive UI:** A beautiful, mobile-first interface built with React, Vite, and Tailwind CSS, featuring a stylish dark theme.
 *   **Dynamic Controls:** The user interface automatically generates input controls (text fields, sliders, dropdowns, toggles) based on the `CozyGenDynamicInput` nodes in your ComfyUI workflows.
+*   **Priority Sorting:** A "priority" field that determines how the webpage is ordered. A 0 priority will push the field towards the top of the page.
 *   **Real-time Previews:** Get instant visual feedback with real-time previews of your generated images directly in the web interface.
 *   **Persistent Sessions:** Your selected workflow, input values, and even the last generated image are remembered across browser sessions.
 *   **Image Gallery:** Browse, view, and manage all your previously generated images, complete with extracted prompt and seed metadata.
