@@ -4,7 +4,7 @@
 
 ## DISCLAIMER
 
-This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but wanted to share a working LLM assisted projected. Everything AFTER this disclaimer is 99% made by an LLM. I just wanted to make dumb cat pictures with my desktop ComfyUI from my phone, so now this exists.
+This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but wanted to share a working LLM assisted projected. Everything AFTER this disclaimer is 99% made by an LLM. I just wanted to make dumb cat pictures with my desktop ComfyUI from my phone, so now this exists. Thanks to @acly and the comfyui-tooling-nodes for the inspiration.
 
 ## ✨ Overview
 
