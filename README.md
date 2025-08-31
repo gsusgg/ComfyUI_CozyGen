@@ -13,7 +13,7 @@ Known Issues:
 *  Currently only t2i workflows have been tested. I plan to add i2i, t2v, i2v, and other types, but no promises (this is a hobby project).
 
 Changelog:
-8/29/2025 - Initial release
+*  8/29/2025 - Initial release
 
 ## ✨ Overview
 
