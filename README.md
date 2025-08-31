@@ -55,6 +55,8 @@ A gallery tab that can navigate your ComfyUI output folder. Click on the path in
 
 ## 📦 Installation
 
+Node can be installed with the ComfyUI Manager. Search for "CozyGen" to install.
+
 Follow these steps to get CozyGen up and running with your ComfyUI instance.
 
 ### 1. Clone the Repository
@@ -68,7 +70,9 @@ git clone https://github.com/gsusgg/ComfyUI_CozyGen.git
 
 ### 2. Install Python Dependencies
 
-CozyGen requires a few Python packages. Navigate into the `ComfyUI_CozyGen` directory and install them using `pip`.
+(This node only requires aiohttp, which should already be installed with ComfyUI.)
+
+CozyGen requires the aiohttp Python package. Navigate into the `ComfyUI_CozyGen` directory and install them using `pip`.
 
 ```bash
 cd custom_nodes/ComfyUI_CozyGen
