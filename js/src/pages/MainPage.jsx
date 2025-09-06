@@ -3,6 +3,7 @@ import WorkflowSelector from '../components/WorkflowSelector';
 import DynamicForm from '../components/DynamicForm';
 import { getWorkflows, getWorkflow, queuePrompt, getChoices } from '../api';
 import Modal from 'react-modal';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 // Modal styles (copied from Gallery.jsx for consistency)
 const customStyles = {
@@ -18,7 +19,7 @@ const customStyles = {
     borderRadius: '8px',
     maxWidth: '90vw',
     maxHeight: '90vh',
-    padding: '2rem'
+    padding: '0.5rem'
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.75)'
@@ -361,7 +362,28 @@ function App() {
                 contentLabel="Image Preview"
             >
                 <div className="flex flex-col items-center justify-center h-full">
-                    <img src={previewImage} alt="Generated preview" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+                    <TransformWrapper
+                        initialScale={1}
+                        minScale={0.5}
+                        maxScale={5}
+                        limitToBounds={false}
+                        doubleClick={{ disabled: true }}
+                        wheel={{ activationKeys: ['Control'] }}
+                        className="h-full w-full"
+                    >
+                        {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                            <>
+                                <TransformComponent className="h-full w-full flex items-center justify-center">
+                                    <img src={previewImage} alt="Generated preview" className="max-w-full object-contain rounded-lg" />
+                                </TransformComponent>
+                                <div className="tools mt-2 flex space-x-2">
+                                    <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
+                                    <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
+                                    <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
+                                </div>
+                            </>
+                        )}
+                    </TransformWrapper>
                     <button 
                         onClick={() => setModalIsOpen(false)}
                         className="mt-4 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"

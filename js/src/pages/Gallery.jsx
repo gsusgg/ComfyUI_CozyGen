@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getGallery } from '../api';
 import GalleryItem from '../components/GalleryItem';
 import Modal from 'react-modal'; // Using react-modal for accessibility
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 // Modal styles
 const customStyles = {
@@ -17,7 +18,7 @@ const customStyles = {
     borderRadius: '8px',
     maxWidth: '90vw',
     maxHeight: '90vh',
-    padding: '2rem'
+    padding: '0.5rem'
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.75)'
@@ -88,11 +89,34 @@ const Gallery = () => {
                 >
                     <div className="flex flex-col lg:flex-row text-white gap-6">
                         <div className="flex-shrink-0">
-                            <img 
-                                src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`}
-                                alt={selectedItem.filename} 
-                                className="max-w-full lg:max-w-2xl max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                            />
+                            <div className="flex-shrink-0">
+                            <TransformWrapper
+                                initialScale={1}
+                                minScale={0.5}
+                                maxScale={5}
+                                limitToBounds={false}
+                                doubleClick={{ disabled: true }}
+                                wheel={{ activationKeys: ['Control'] }}
+                                className="h-full w-full"
+                            >
+                                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                                    <>
+                                        <TransformComponent className="h-full w-full flex items-center justify-center">
+                                            <img 
+                                                src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`}
+                                                alt={selectedItem.filename} 
+                                                className="max-w-full lg:max-w-2xl object-contain rounded-lg shadow-2xl"
+                                            />
+                                        </TransformComponent>
+                                        <div className="tools mt-2 flex space-x-2">
+                                            <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
+                                            <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
+                                            <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
+                                        </div>
+                                    </>
+                                )}
+                            </TransformWrapper>
+                        </div>
                         </div>
                         <div className="flex-grow min-w-0">
                             <h2 className="text-2xl font-bold mb-4 break-words">{selectedItem.filename}</h2>
