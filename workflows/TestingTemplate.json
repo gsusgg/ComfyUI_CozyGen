@@ -1,0 +1,223 @@
+{
+  "1": {
+    "inputs": {
+      "samples": [
+        "6",
+        0
+      ],
+      "vae": [
+        "23",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "3": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "seed": [
+        "35",
+        0
+      ],
+      "steps": [
+        "41",
+        0
+      ],
+      "cfg": 3.5,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "40",
+        0
+      ],
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "27",
+        0
+      ],
+      "latent_image": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": [
+        "38",
+        0
+      ],
+      "clip": [
+        "40",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "15": {
+    "inputs": {
+      "images": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "23": {
+    "inputs": {
+      "ckpt_name": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "27": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "40",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "33": {
+    "inputs": {
+      "filename_prefix": "CozyGen/output",
+      "images": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "CozyGenOutput",
+    "_meta": {
+      "title": "CozyGen Output"
+    }
+  },
+  "35": {
+    "inputs": {
+      "param_name": "Seed",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 1234,
+      "min_value": 0,
+      "max_value": 18446744073709552000,
+      "increment": 10,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "36": {
+    "inputs": {
+      "param_name": "Lora 1",
+      "priority": 0,
+      "param_type": "DROPDOWN",
+      "default_value": "SDXL\\Hyper-SDXL-8steps-CFG-lora.safetensors",
+      "choice_type": "loras"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "38": {
+    "inputs": {
+      "param_name": "Prompt",
+      "priority": 0,
+      "param_type": "STRING",
+      "default_value": "A dog on a boat.",
+      "Multiline": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "39": {
+    "inputs": {
+      "param_name": "Model Checkpoint",
+      "priority": 0,
+      "param_type": "DROPDOWN",
+      "default_value": "SDXL\\juggernautXL_ragnarokBy.safetensors",
+      "choice_type": "checkpoints"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "40": {
+    "inputs": {
+      "lora_name": [
+        "36",
+        0
+      ],
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "23",
+        0
+      ],
+      "clip": [
+        "23",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "41": {
+    "inputs": {
+      "param_name": "Steps",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 8,
+      "min_value": 1,
+      "max_value": 10000,
+      "increment": 1
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  }
+}

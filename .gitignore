@@ -1,6 +1,11 @@
 # Node dependencies
 js/node_modules
+js/dist/
 
 # Python cache
 __pycache__/
 *.pyc
+
+# Generated files and logs
+*.png
+*.log

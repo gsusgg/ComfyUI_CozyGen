@@ -5,6 +5,10 @@ import folder_paths
 from PIL import Image
 import server # Import server for node_info
 
+# Hardcoded lists for schedulers and samplers
+SCHEDULERS = ["simple", "sgm_uniform", "karras", "exponential", "ddim_uniform", "beta", "normal", "linear_quadratic", "kl_optimal"]
+SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral", "lms", "dpmpp_2s_a", "dpmpp_sde", "dpmpp_sde_gpu", "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "dpmpp_3m_sde", "dpmpp_3m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
+
 def extract_png_info(image_path):
     """Extracts prompt and seed from PNG metadata."""
     try:
@@ -102,7 +106,7 @@ async def get_workflow_file(request: web.Request) -> web.Response:
         return web.json_response({"error": f"Workflow file '{filename}' not found"}, status=404)
     
     try:
-        with open(workflow_path, 'r') as f:
+        with open(workflow_path, 'r', encoding='utf-8') as f:
             workflow_content = json.load(f)
         return web.json_response(workflow_content)
     except json.JSONDecodeError:
@@ -115,11 +119,19 @@ async def get_choices(request: web.Request) -> web.Response:
     if not choice_type:
         return web.json_response({"error": "Missing 'type' query parameter"}, status=400)
 
-    try:
-        choices = folder_paths.get_filename_list(choice_type)
-        return web.json_response({"choices": choices})
-    except Exception as e:
-        return web.json_response({"error": f"Error getting choices for type '{choice_type}': {e}"}, status=500)
+    choices = []
+    if choice_type == "schedulers_list":
+        choices = SCHEDULERS
+    elif choice_type == "samplers_list":
+        choices = SAMPLERS
+    else:
+        try:
+            choices = folder_paths.get_filename_list(choice_type)
+        except Exception as e:
+            print(f"CozyGen: Error getting choices for type '{choice_type}': {e}")
+            return web.json_response({"error": f"Error getting choices for type '{choice_type}': {e}"}, status=500)
+    
+    return web.json_response({"choices": choices})
 
 routes = [
     web.get('/cozygen/hello', get_hello),

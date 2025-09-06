@@ -73,14 +73,23 @@ function App() {
       websocketRef.current.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === 'cozygen_image_ready') {
-          setPreviewImage(msg.data.image_url);
+          if (msg.data.status === 'image_generated') {
+            setPreviewImage(msg.data.image_url);
+            localStorage.setItem('lastPreviewImage', msg.data.image_url);
+          } else if (msg.data.status === 'no_new_image') {
+            // Do not update previewImage, keep the old one or clear if desired
+            // For now, just clear loading state
+          }
           setIsLoading(false);
           setProgressValue(0); // Reset progress
           setProgressMax(0);
-          localStorage.setItem('lastPreviewImage', msg.data.image_url);
         } else if (msg.type === 'progress') {
           setProgressValue(msg.data.value);
           setProgressMax(msg.data.max);
+        } else if (msg.type === 'cozygen_prompt_completed') {
+          setIsLoading(false);
+          setProgressValue(0); // Reset progress
+          setProgressMax(0);
         }
       };
 
@@ -131,23 +140,21 @@ function App() {
         const inputsWithChoices = await Promise.all(inputs.map(async (input) => {
             if (input.inputs['param_type'] === 'DROPDOWN') {
                 const param_name = input.inputs['param_name'];
-                const choiceType = choiceTypeMapping[param_name];
+                // New logic: Prioritize 'choice_type' if it exists
+                let choiceType = input.inputs['choice_type'] || (input.properties && input.properties['choice_type']);
+
+                // Fallback to the old mapping if 'choice_type' is not provided
+                if (!choiceType) {
+                    choiceType = choiceTypeMapping[param_name];
+                }
+
                 if (choiceType) {
                     try {
                         const choicesData = await getChoices(choiceType);
                         input.inputs.choices = choicesData.choices || [];
                     } catch (error) {
-                        console.error(`Error fetching choices for ${param_name}:`, error);
+                        console.error(`Error fetching choices for ${param_name} (choiceType: ${choiceType}):`, error);
                         input.inputs.choices = []; // Set to empty array on error
-                    }
-                } else {
-                    console.warn(`No choiceType mapping found for param_name: ${param_name}. Checking for direct 'choices' string.`);
-                    // Fallback to parsing a comma-separated string if no dynamic mapping and a 'choices' string is present
-                    const choicesString = input.inputs['choices'];
-                    if (choicesString && typeof choicesString === 'string') {
-                        input.inputs.choices = choicesString.split(',').map(choice => choice.trim());
-                    } else {
-                        input.inputs.choices = [];
                     }
                 }
             }
@@ -220,6 +227,21 @@ function App() {
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
+    // Add a unique ID to the workflow to prevent ComfyUI from getting stuck on identical prompts
+    const uniqueId = Date.now(); // Using a timestamp as a unique ID
+
+    // Find the CozyGenOutput node and inject the unique ID into its extra_pnginfo
+    for (const nodeId in finalWorkflow) {
+        const node = finalWorkflow[nodeId];
+        if (node.class_type === 'CozyGenOutput') {
+            if (!node.inputs.extra_pnginfo) {
+                node.inputs.extra_pnginfo = {};
+            }
+            node.inputs.extra_pnginfo.cozygen_unique_id = uniqueId;
+            break; // Assuming only one CozyGenOutput node
+        }
+    }
+
     // Inject the dynamic values into the workflow
     dynamicInputs.forEach(dynamicNode => {
         const param_name = dynamicNode.inputs['param_name'];
@@ -270,39 +292,8 @@ function App() {
   return (
     <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column: Controls */}
-            <div className="flex flex-col space-y-6">
-                <WorkflowSelector 
-                  workflows={workflows}
-                  selectedWorkflow={selectedWorkflow}
-                  onSelect={handleWorkflowSelect}
-                />
-                <DynamicForm 
-                  inputs={dynamicInputs}
-                  formData={formData}
-                  onFormChange={handleFormChange}
-                  randomizeState={randomizeState}
-                  onRandomizeToggle={handleRandomizeToggle}
-                />
-            </div>
-
             {/* Right Column: Preview & Generate Button */}
             <div className="flex flex-col space-y-6">
-                <button 
-                    onClick={handleGenerate}
-                    disabled={isLoading || !workflowData}
-                    className="w-full bg-accent text-white font-bold text-lg py-4 px-4 rounded-lg hover:bg-accent-focus transition duration-300 disabled:bg-base-300 disabled:cursor-not-allowed shadow-lg"
-                >
-                    {isLoading ? 'Generating...' : 'Generate'}
-                </button>
-                {(isLoading && progressMax > 0) && (
-                    <div className="w-full bg-base-300 rounded-full h-2.5 mt-2">
-                        <div 
-                            className="bg-accent h-2.5 rounded-full transition-all duration-1000 ease-out"
-                            style={{ width: `${(progressValue / progressMax) * 100}%` }}
-                        ></div>
-                    </div>
-                )}
                 <div className="bg-base-200 shadow-lg rounded-lg p-4 min-h-[400px] lg:min-h-[500px] flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold text-white">Preview</h2>
@@ -328,6 +319,36 @@ function App() {
                         )}
                     </div>
                 </div>
+                <button 
+                    onClick={handleGenerate}
+                    disabled={isLoading || !workflowData}
+                    className="w-full bg-accent text-white font-bold text-lg py-4 px-4 rounded-lg hover:bg-accent-focus transition duration-300 disabled:bg-base-300 disabled:cursor-not-allowed shadow-lg"
+                >
+                    {isLoading ? 'Generating...' : 'Generate'}
+                </button>
+                {(isLoading && progressMax > 0) && (
+                    <div className="w-full bg-base-300 rounded-full h-2.5 mt-2">
+                        <div 
+                            className="bg-accent h-2.5 rounded-full transition-all duration-1000 ease-out"
+                            style={{ width: `${(progressValue / progressMax) * 100}%` }}
+                        ></div>
+                    </div>
+                )}
+            </div>
+            {/* Left Column: Controls */}
+            <div className="flex flex-col space-y-6">
+                <WorkflowSelector 
+                  workflows={workflows}
+                  selectedWorkflow={selectedWorkflow}
+                  onSelect={handleWorkflowSelect}
+                />
+                <DynamicForm 
+                  inputs={dynamicInputs}
+                  formData={formData}
+                  onFormChange={handleFormChange}
+                  randomizeState={randomizeState}
+                  onRandomizeToggle={handleRandomizeToggle}
+                />
             </div>
         </div>
 

@@ -36,6 +36,7 @@ class CozyGenDynamicInput:
             },
             "optional": {
                 "add_randomize_toggle": ("BOOLEAN", {"default": False}),
+                "choice_type": ("STRING", {"default": ""}),
             },
             "hidden": {
                 "choices": ("STRING", {"default": ""}), # Used by JS for dropdowns
@@ -51,7 +52,7 @@ class CozyGenDynamicInput:
 
     CATEGORY = "CozyGen"
 
-    def get_dynamic_value(self, param_name, priority, param_type, default_value, add_randomize_toggle=False, min_value=0.0, max_value=1.0, choices="", multiline=False, step=None):
+    def get_dynamic_value(self, param_name, priority, param_type, default_value, add_randomize_toggle=False, choice_type="", min_value=0.0, max_value=1.0, choices="", multiline=False, step=None):
         # Convert default_value based on param_type
         if param_type == "INT":
             try:
@@ -104,6 +105,7 @@ class CozyGenOutput(SaveImage):
     def save_images(self, images, filename_prefix="CozyGen/output", prompt=None, extra_pnginfo=None):
         results = super().save_images(images, filename_prefix, prompt, extra_pnginfo)
 
+        # Check if an image was actually saved
         if results and 'ui' in results and 'images' in results['ui'] and results['ui']['images']:
             saved_image = results['ui']['images'][0]
             saved_filename = saved_image['filename']
@@ -113,22 +115,24 @@ class CozyGenOutput(SaveImage):
             # Construct the URL for the image
             image_url = f"/view?filename={saved_filename}&subfolder={subfolder}&type={saved_type}"
             
-            # Send custom WebSocket message
-            message = {
-                "type": "cozygen_image_ready",
-                "data": {
-                    "image_url": image_url,
-                    "filename": saved_filename,
-                    "subfolder": subfolder,
-                    "type": saved_type
-                }
+            message_data = {
+                "status": "image_generated",
+                "image_url": image_url,
+                "filename": saved_filename,
+                "subfolder": subfolder,
+                "type": saved_type
             }
-            
-            # Get the PromptServer instance and send the message
-            server_instance = server.PromptServer.instance
-            if server_instance:
-                server_instance.send_sync("cozygen_image_ready", message["data"])
-                print(f"CozyGen: Sent custom WebSocket message: {message}")
+        else:
+            # No new image was generated (e.g., duplicate prompt)
+            message_data = {
+                "status": "no_new_image"
+            }
+        
+        # Send custom WebSocket message regardless of whether an image was saved
+        server_instance = server.PromptServer.instance
+        if server_instance:
+            server_instance.send_sync("cozygen_image_ready", message_data)
+            print(f"CozyGen: Sent custom WebSocket message: {{'type': 'cozygen_image_ready', 'data': {message_data}}}")
 
             
         
