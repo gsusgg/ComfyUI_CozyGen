@@ -56,9 +56,21 @@ const Gallery = () => {
     };
 
     const handleBreadcrumbClick = (index) => {
-        const pathSegments = path.split('/').filter(Boolean);
+        const normalizedPath = path.replace(/\\/g, '/');
+        const pathSegments = normalizedPath.split('/').filter(Boolean);
         const newPath = pathSegments.slice(0, index).join('/');
         setPath(newPath);
+    };
+
+    const handleFolderUp = () => {
+        const normalizedPath = path.replace(/\\/g, '/');
+        const pathSegments = normalizedPath.split('/').filter(Boolean);
+        if (pathSegments.length > 0) {
+            const newPath = pathSegments.slice(0, -1).join('/');
+            setPath(newPath);
+        } else {
+            setPath(''); // Already at root, ensure path is empty
+        }
     };
 
     const breadcrumbs = path.split(/[\/]/).filter(Boolean); // Handle both windows and unix paths
@@ -73,6 +85,17 @@ const Gallery = () => {
                         <span onClick={() => handleBreadcrumbClick(index + 1)} className="cursor-pointer hover:text-accent transition-colors">{segment}</span>
                     </React.Fragment>
                 ))}
+                {/* Folder Up Button */}
+                <button
+                    onClick={handleFolderUp}
+                    disabled={path === ''} // Disable if at root
+                    className="ml-auto px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors flex items-center"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                    </svg>
+                    Up
+                </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {items.map(item => (
