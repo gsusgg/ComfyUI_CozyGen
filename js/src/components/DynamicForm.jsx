@@ -61,8 +61,8 @@ const DynamicForm = ({ inputs, formData, onFormChange, randomizeState, onRandomi
 
   return (
     <div className="bg-base-200 shadow-lg rounded-lg p-4">
-      <h2 className="text-lg font-semibold text-white mb-4">Controls</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
+      <h2 className="text-lg font-semibold text-white mb-2">Controls</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
         {inputs.map(input => (
             <div key={input.id} className={input.inputs['Multiline'] ? 'sm:col-span-2' : ''}>{renderInput(input, formData, onFormChange, randomizeState, onRandomizeToggle)}</div>
         ))}

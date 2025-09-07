@@ -17,8 +17,6 @@ const customStyles = {
     backgroundColor: '#2D3748', // base-200
     border: 'none',
     borderRadius: '8px',
-    maxWidth: '90vw',
-    maxHeight: '90vh',
     padding: '0.5rem'
   },
   overlay: {
@@ -311,9 +309,9 @@ function App() {
 
   return (
     <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Right Column: Preview & Generate Button */}
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-4">
                 <div className="bg-base-200 shadow-lg rounded-lg p-4 min-h-[400px] lg:min-h-[500px] flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold text-white">Preview</h2>
@@ -324,7 +322,7 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow flex flex-wrap items-center justify-center gap-4 border-2 border-dashed border-base-300 rounded-lg p-4">
+                    <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4 border-2 border-dashed border-base-300 rounded-lg p-4 overflow-y-auto">
                         {isLoading && <div className="text-center w-full"><p className="text-lg">Generating...</p></div>}
                         {!isLoading && previewImages.length === 0 && (
                             <p className="text-gray-400">Your generated images will appear here.</p>
@@ -357,7 +355,7 @@ function App() {
                 )}
             </div>
             {/* Left Column: Controls */}
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-4">
                 <WorkflowSelector 
                   workflows={workflows}
                   selectedWorkflow={selectedWorkflow}
@@ -381,35 +379,40 @@ function App() {
                 style={customStyles}
                 contentLabel="Image Preview"
             >
-                <div className="flex flex-col items-center justify-center h-full">
-                    <TransformWrapper
-                        initialScale={1}
-                        minScale={0.5}
-                        maxScale={5}
-                        limitToBounds={false}
-                        doubleClick={{ disabled: true }}
-                        wheel={{ activationKeys: ['Control'] }}
-                        className="h-full w-full"
-                    >
-                        {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-                            <>
+                <div className="flex flex-col h-full"> {/* Main modal content container */}
+                    {/* Image section - takes available space */}
+                    <div className="flex-grow flex items-center justify-center">
+                        <TransformWrapper
+                            initialScale={1}
+                            minScale={0.5}
+                            maxScale={5}
+                            limitToBounds={false}
+                            doubleClick={{ disabled: true }}
+                            wheel={{ activationKeys: ['Control'] }}
+                            className="h-full w-full" // Keep these for image scaling within its container
+                        >
+                            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                                 <TransformComponent className="h-full w-full flex items-center justify-center">
                                     <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full object-contain rounded-lg" />
                                 </TransformComponent>
-                                <div className="tools mt-2 flex space-x-2">
-                                    <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
-                                    <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
-                                    <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
-                                </div>
-                            </>
-                        )}
-                    </TransformWrapper>
-                    <button 
-                        onClick={() => setModalIsOpen(false)}
-                        className="mt-4 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"
-                    >
-                        Close
-                    </button>
+                            )}
+                        </TransformWrapper>
+                    </div>
+
+                    {/* Controls and Close button section - fixed at bottom */}
+                    <div className="flex flex-col items-center mt-4"> {/* Add margin-top for spacing */}
+                        <div className="tools flex space-x-2 mb-2"> {/* Controls */}
+                            <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
+                            <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
+                            <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
+                        </div>
+                        <button
+                            onClick={() => setModalIsOpen(false)}
+                            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </Modal>
         )}

@@ -17,8 +17,14 @@
   },
   "3": {
     "inputs": {
-      "width": 1024,
-      "height": 1024,
+      "width": [
+        "44",
+        0
+      ],
+      "height": [
+        "45",
+        0
+      ],
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage",
@@ -37,8 +43,14 @@
         0
       ],
       "cfg": 3.5,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "sampler_name": [
+        "42",
+        0
+      ],
+      "scheduler": [
+        "43",
+        0
+      ],
       "denoise": 1,
       "model": [
         "40",
@@ -131,9 +143,9 @@
   "35": {
     "inputs": {
       "param_name": "Seed",
-      "priority": 0,
+      "priority": 2,
       "param_type": "INT",
-      "default_value": 1234,
+      "default_value": 0,
       "min_value": 0,
       "max_value": 18446744073709552000,
       "increment": 10,
@@ -146,10 +158,10 @@
   },
   "36": {
     "inputs": {
-      "param_name": "Lora 1",
-      "priority": 0,
+      "param_name": "lora_name",
+      "priority": 3,
       "param_type": "DROPDOWN",
-      "default_value": "SDXL\\Hyper-SDXL-8steps-CFG-lora.safetensors",
+      "default_value": "8stepTurbo.safetensors",
       "choice_type": "loras"
     },
     "class_type": "CozyGenDynamicInput",
@@ -162,7 +174,7 @@
       "param_name": "Prompt",
       "priority": 0,
       "param_type": "STRING",
-      "default_value": "A dog on a boat.",
+      "default_value": "",
       "Multiline": true
     },
     "class_type": "CozyGenDynamicInput",
@@ -173,9 +185,9 @@
   "39": {
     "inputs": {
       "param_name": "Model Checkpoint",
-      "priority": 0,
+      "priority": 4,
       "param_type": "DROPDOWN",
-      "default_value": "SDXL\\juggernautXL_ragnarokBy.safetensors",
+      "default_value": "FLUX\\flux1-dev-fp8.safetensors",
       "choice_type": "checkpoints"
     },
     "class_type": "CozyGenDynamicInput",
@@ -208,12 +220,68 @@
   "41": {
     "inputs": {
       "param_name": "Steps",
-      "priority": 0,
+      "priority": 2,
       "param_type": "INT",
-      "default_value": 8,
+      "default_value": 10,
       "min_value": 1,
       "max_value": 10000,
-      "increment": 1
+      "increment": 10
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "42": {
+    "inputs": {
+      "param_name": "sampler_name",
+      "priority": 4,
+      "param_type": "DROPDOWN",
+      "default_value": "euler",
+      "choice_type": "samplers_list"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "43": {
+    "inputs": {
+      "param_name": "scheduler",
+      "priority": 4,
+      "param_type": "DROPDOWN",
+      "default_value": "simple",
+      "choice_type": "schedulers_list"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "44": {
+    "inputs": {
+      "param_name": "width",
+      "priority": 1,
+      "param_type": "INT",
+      "default_value": 1024,
+      "min_value": 16,
+      "max_value": 16384,
+      "increment": 80
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "45": {
+    "inputs": {
+      "param_name": "height",
+      "priority": 1,
+      "param_type": "INT",
+      "default_value": 1024,
+      "min_value": 16,
+      "max_value": 16384,
+      "increment": 80
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {
