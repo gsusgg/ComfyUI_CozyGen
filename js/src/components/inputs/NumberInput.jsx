@@ -14,9 +14,8 @@ const NumberInput = ({ label, value, onChange, onRandomizeToggle, isRandomized, 
         <input
           type="number"
           className="block w-full p-2.5 border border-base-300 bg-base-100 text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all disabled:bg-base-300/50"
-          value={isRandomized ? '' : (value || '')}
+          value={value || ''}
           onChange={handleValueChange}
-          disabled={isRandomized}
           min={min}
           max={max}
           step={step}

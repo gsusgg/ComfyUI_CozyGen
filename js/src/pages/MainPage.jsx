@@ -55,12 +55,21 @@ function App() {
   const [dynamicInputs, setDynamicInputs] = useState([]);
   const [formData, setFormData] = useState({});
   const [randomizeState, setRandomizeState] = useState({});
-  const [previewImage, setPreviewImage] = useState(localStorage.getItem('lastPreviewImage') || null);
+  const [previewImages, setPreviewImages] = useState(() => {
+    const savedImages = localStorage.getItem('cozygen_preview_images');
+    return savedImages ? JSON.parse(savedImages) : [];
+  });
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const websocketRef = useRef(null);
   const [progressValue, setProgressValue] = useState(0);
   const [progressMax, setProgressMax] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  const openModalWithImage = (imageSrc) => {
+    setSelectedPreviewImage(imageSrc);
+    setModalIsOpen(true);
+  };
 
   // --- WebSocket Connection ---
   useEffect(() => {
@@ -75,11 +84,14 @@ function App() {
         const msg = JSON.parse(event.data);
         if (msg.type === 'cozygen_image_ready') {
           if (msg.data.status === 'image_generated') {
-            setPreviewImage(msg.data.image_url);
-            localStorage.setItem('lastPreviewImage', msg.data.image_url);
+            setPreviewImages(prevImages => {
+              const newImages = [...prevImages, msg.data.image_url];
+              localStorage.setItem('cozygen_preview_images', JSON.stringify(newImages));
+              return newImages;
+            });
           } else if (msg.data.status === 'no_new_image') {
             // Do not update previewImage, keep the old one or clear if desired
-            // For now, just clear loading state
+            // For now, just just clear loading state
           }
           setIsLoading(false);
           setProgressValue(0); // Reset progress
@@ -224,7 +236,7 @@ function App() {
   const handleGenerate = async () => {
     if (!workflowData) return;
     setIsLoading(true);
-    setPreviewImage(null);
+    setPreviewImages([]);
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
@@ -243,6 +255,8 @@ function App() {
         }
     }
 
+    let updatedFormData = { ...formData }; // Start with current formData
+
     // Inject the dynamic values into the workflow
     dynamicInputs.forEach(dynamicNode => {
         const param_name = dynamicNode.inputs['param_name'];
@@ -258,6 +272,7 @@ function App() {
             } else {
                 valueToInject = Math.floor(Math.random() * (max - min + 1)) + min;
             }
+            updatedFormData[param_name] = valueToInject; // Update the temporary object
         } else {
             valueToInject = formData[param_name];
         }
@@ -277,6 +292,9 @@ function App() {
         }
     });
 
+    setFormData(updatedFormData); // Update state once after the loop
+    localStorage.setItem(`${selectedWorkflow}_formData`, JSON.stringify(updatedFormData)); // Save to localStorage
+
     try {
         await queuePrompt({ prompt: finalWorkflow });
     } catch (error) {
@@ -286,8 +304,9 @@ function App() {
   };
 
   const handleClearPreview = () => {
-    setPreviewImage(null);
+    setPreviewImages([]);
     localStorage.removeItem('lastPreviewImage');
+    localStorage.removeItem('cozygen_preview_images');
   };
 
   return (
@@ -305,19 +324,20 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg">
-                        {isLoading && <div className="text-center"><p className="text-lg">Generating...</p></div>} 
-                        {previewImage && !isLoading && (
-                            <img
-                                src={previewImage}
-                                alt="Generated preview"
-                                className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
-                                onClick={() => setModalIsOpen(true)}
-                            />
-                        )} 
-                        {!previewImage && !isLoading && (
-                            <p className="text-gray-400">Your generated image will appear here.</p>
+                    <div className="flex-grow flex flex-wrap items-center justify-center gap-4 border-2 border-dashed border-base-300 rounded-lg p-4">
+                        {isLoading && <div className="text-center w-full"><p className="text-lg">Generating...</p></div>}
+                        {!isLoading && previewImages.length === 0 && (
+                            <p className="text-gray-400">Your generated images will appear here.</p>
                         )}
+                        {previewImages.map((imageSrc, index) => (
+                            <img
+                                key={index}
+                                src={imageSrc}
+                                alt={`Generated preview ${index + 1}`}
+                                className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
+                                onClick={() => openModalWithImage(imageSrc)}
+                            />
+                        ))}
                     </div>
                 </div>
                 <button 
@@ -354,7 +374,7 @@ function App() {
         </div>
 
         {/* Image Preview Modal */}
-        {previewImage && (
+        {selectedPreviewImage && (
             <Modal
                 isOpen={modalIsOpen}
                 onRequestClose={() => setModalIsOpen(false)}
@@ -374,7 +394,7 @@ function App() {
                         {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                             <>
                                 <TransformComponent className="h-full w-full flex items-center justify-center">
-                                    <img src={previewImage} alt="Generated preview" className="max-w-full object-contain rounded-lg" />
+                                    <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full object-contain rounded-lg" />
                                 </TransformComponent>
                                 <div className="tools mt-2 flex space-x-2">
                                     <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>

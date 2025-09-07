@@ -9,3 +9,7 @@ __pycache__/
 # Generated files and logs
 *.png
 *.log
+
+# Gemini related files
+GEMINI.md
+TechDocs.md
