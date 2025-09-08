@@ -17,7 +17,9 @@ const customStyles = {
     backgroundColor: '#2D3748', // base-200
     border: 'none',
     borderRadius: '8px',
-    padding: '0.5rem'
+    padding: '0.5rem',
+    maxHeight: '90vh',
+    width: '90vw'
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.75)'
@@ -54,10 +56,7 @@ function App() {
   const [formData, setFormData] = useState({});
   const [randomizeState, setRandomizeState] = useState({});
   const [bypassedState, setBypassedState] = useState({});
-  const [previewImages, setPreviewImages] = useState(() => {
-    const savedImages = localStorage.getItem('cozygen_preview_images');
-    return savedImages ? JSON.parse(savedImages) : [];
-  });
+  const [previewImage, setPreviewImage] = useState(localStorage.getItem('lastPreviewImage') || null);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const websocketRef = useRef(null);
@@ -83,11 +82,8 @@ function App() {
         const msg = JSON.parse(event.data);
         if (msg.type === 'cozygen_image_ready') {
           if (msg.data.status === 'image_generated') {
-            setPreviewImages(prevImages => {
-              const newImages = [...prevImages, msg.data.image_url];
-              localStorage.setItem('cozygen_preview_images', JSON.stringify(newImages));
-              return newImages;
-            });
+            setPreviewImage(msg.data.image_url);
+            localStorage.setItem('lastPreviewImage', msg.data.image_url);
           } else if (msg.data.status === 'no_new_image') {
             // Do not update previewImage, keep the old one or clear if desired
             // For now, just just clear loading state
@@ -244,7 +240,7 @@ function App() {
   const handleGenerate = async () => {
     if (!workflowData) return;
     setIsLoading(true);
-    setPreviewImages([]);
+    setPreviewImage(null);
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
@@ -455,9 +451,8 @@ function App() {
   };
 
   const handleClearPreview = () => {
-    setPreviewImages([]);
+    setPreviewImage(null);
     localStorage.removeItem('lastPreviewImage');
-    localStorage.removeItem('cozygen_preview_images');
   };
 
   return (
@@ -475,20 +470,19 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4 border-2 border-dashed border-base-300 rounded-lg p-4 overflow-y-auto">
+                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-4 overflow-y-auto">
                         {isLoading && <div className="text-center w-full"><p className="text-lg">Generating...</p></div>}
-                        {!isLoading && previewImages.length === 0 && (
-                            <p className="text-gray-400">Your generated images will appear here.</p>
+                        {!isLoading && !previewImage && (
+                            <p className="text-gray-400">Your generated image will appear here.</p>
                         )}
-                        {previewImages.map((imageSrc, index) => (
+                        {!isLoading && previewImage && (
                             <img
-                                key={index}
-                                src={imageSrc}
-                                alt={`Generated preview ${index + 1}`}
+                                src={previewImage}
+                                alt="Generated preview"
                                 className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
-                                onClick={() => openModalWithImage(imageSrc)}
+                                onClick={() => openModalWithImage(previewImage)}
                             />
-                        ))}
+                        )}
                     </div>
                 </div>
                 <button 
@@ -543,12 +537,12 @@ function App() {
                             maxScale={5}
                             limitToBounds={false}
                             doubleClick={{ disabled: true }}
-                            wheel={{ activationKeys: ['Control'] }}
+                            wheel={true}
                             className="h-full w-full" // Keep these for image scaling within its container
                         >
                             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                                 <TransformComponent className="h-full w-full flex items-center justify-center">
-                                    <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full object-contain rounded-lg" />
+                                    <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full rounded-lg" />
                                 </TransformComponent>
                             )}
                         </TransformWrapper>
