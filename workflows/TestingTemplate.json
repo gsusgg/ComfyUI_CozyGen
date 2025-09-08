@@ -42,7 +42,7 @@
         "41",
         0
       ],
-      "cfg": 3.5,
+      "cfg": 6,
       "sampler_name": [
         "42",
         0
@@ -156,26 +156,13 @@
       "title": "CozyGen Dynamic Input"
     }
   },
-  "36": {
-    "inputs": {
-      "param_name": "lora_name",
-      "priority": 3,
-      "param_type": "DROPDOWN",
-      "default_value": "8stepTurbo.safetensors",
-      "choice_type": "loras"
-    },
-    "class_type": "CozyGenDynamicInput",
-    "_meta": {
-      "title": "CozyGen Dynamic Input"
-    }
-  },
   "38": {
     "inputs": {
       "param_name": "Prompt",
       "priority": 0,
       "param_type": "STRING",
       "default_value": "",
-      "Multiline": true
+      "Multiline": false
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {
@@ -198,7 +185,7 @@
   "40": {
     "inputs": {
       "lora_name": [
-        "36",
+        "46",
         0
       ],
       "strength_model": 1,
@@ -222,7 +209,7 @@
       "param_name": "Steps",
       "priority": 2,
       "param_type": "INT",
-      "default_value": 10,
+      "default_value": 0,
       "min_value": 1,
       "max_value": 10000,
       "increment": 10
@@ -263,7 +250,7 @@
       "param_name": "width",
       "priority": 1,
       "param_type": "INT",
-      "default_value": 1024,
+      "default_value": 0,
       "min_value": 16,
       "max_value": 16384,
       "increment": 80
@@ -278,10 +265,24 @@
       "param_name": "height",
       "priority": 1,
       "param_type": "INT",
-      "default_value": 1024,
+      "default_value": 0,
       "min_value": 16,
       "max_value": 16384,
       "increment": 80
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "46": {
+    "inputs": {
+      "param_name": "lora_name",
+      "priority": 0,
+      "param_type": "DROPDOWN",
+      "default_value": "Flux\\2000analogcore_v3.safetensors",
+      "choice_type": "loras",
+      "display_bypass": true
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {

@@ -53,6 +53,7 @@ function App() {
   const [dynamicInputs, setDynamicInputs] = useState([]);
   const [formData, setFormData] = useState({});
   const [randomizeState, setRandomizeState] = useState({});
+  const [bypassedState, setBypassedState] = useState({});
   const [previewImages, setPreviewImages] = useState(() => {
     const savedImages = localStorage.getItem('cozygen_preview_images');
     return savedImages ? JSON.parse(savedImages) : [];
@@ -200,6 +201,9 @@ function App() {
         const savedRandomizeState = JSON.parse(localStorage.getItem(`${selectedWorkflow}_randomizeState`)) || {};
         setRandomizeState(savedRandomizeState);
 
+        const savedBypassedState = JSON.parse(localStorage.getItem(`${selectedWorkflow}_bypassedState`)) || {};
+        setBypassedState(savedBypassedState);
+
       } catch (error) {
         console.error(error);
       }
@@ -231,12 +235,25 @@ function App() {
     localStorage.setItem(`${selectedWorkflow}_randomizeState`, JSON.stringify(newRandomizeState));
   };
 
+  const handleBypassToggle = (inputName, isBypassed) => {
+    const newBypassedState = { ...bypassedState, [inputName]: isBypassed };
+    setBypassedState(newBypassedState);
+    localStorage.setItem(`${selectedWorkflow}_bypassedState`, JSON.stringify(newBypassedState));
+  };
+
   const handleGenerate = async () => {
     if (!workflowData) return;
     setIsLoading(true);
     setPreviewImages([]);
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
+
+    
+
+    // Note: ComfyUI's API handles link removal automatically when nodes are deleted.
+    // We don't need to explicitly manage a `finalWorkflow.links` object here
+    // because the workflowData we receive is a flat node dictionary, not the full API JSON structure.
+    // The links are implicitly handled by the input arrays.
 
     // Add a unique ID to the workflow to prevent ComfyUI from getting stuck on identical prompts
     const uniqueId = Date.now(); // Using a timestamp as a unique ID
@@ -273,6 +290,23 @@ function App() {
             updatedFormData[param_name] = valueToInject; // Update the temporary object
         } else {
             valueToInject = formData[param_name];
+        }
+
+        // Perform type conversion before injecting the value
+        switch (dynamicNode.inputs['param_type']) {
+            case 'INT':
+                valueToInject = parseInt(valueToInject);
+                break;
+            case 'FLOAT':
+                valueToInject = parseFloat(valueToInject);
+                break;
+            case 'BOOLEAN':
+                valueToInject = String(valueToInject).toLowerCase() === 'true';
+                break;
+            case 'STRING':
+            default:
+                // No conversion needed for STRING or unknown types
+                break;
         }
 
         // Iterate through all nodes in the workflow
@@ -367,6 +401,8 @@ function App() {
                   onFormChange={handleFormChange}
                   randomizeState={randomizeState}
                   onRandomizeToggle={handleRandomizeToggle}
+                  bypassedState={bypassedState}
+                  onBypassToggle={handleBypassToggle}
                 />
             </div>
         </div>

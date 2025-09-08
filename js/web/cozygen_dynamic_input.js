@@ -128,6 +128,10 @@ import { app } from "/scripts/app.js";
                 choiceTypeWidget.value = inferredChoiceType; // Update widget value directly
             }
 
+            // Add the display_bypass toggle for dropdowns
+            let displayBypassToggle = node.addWidget("toggle", "display_bypass", node.properties["display_bypass"], function(v) { node.properties["display_bypass"] = v; });
+            node.properties["display_bypass"] = displayBypassToggle.value;
+
         } else if (paramType === "INT") {
             defaultWidget = node.addWidget("number", "default_value", defaultValue, function(v) { node.properties["default_value"] = v; }, { precision: 0, min: min, max: max, step: increment });
         } else if (paramType === "FLOAT") {

@@ -37,6 +37,7 @@ class CozyGenDynamicInput:
             "optional": {
                 "add_randomize_toggle": ("BOOLEAN", {"default": False}),
                 "choice_type": ("STRING", {"default": ""}),
+                "display_bypass": ("BOOLEAN", {"default": False}),
             },
             "hidden": {
                 "choices": ("STRING", {"default": ""}), # Used by JS for dropdowns
@@ -52,7 +53,7 @@ class CozyGenDynamicInput:
 
     CATEGORY = "CozyGen"
 
-    def get_dynamic_value(self, param_name, priority, param_type, default_value, add_randomize_toggle=False, choice_type="", min_value=0.0, max_value=1.0, choices="", multiline=False, step=None):
+    def get_dynamic_value(self, param_name, priority, param_type, default_value, add_randomize_toggle=False, choice_type="", min_value=0.0, max_value=1.0, choices="", multiline=False, step=None, display_bypass=False):
         # Convert default_value based on param_type
         if param_type == "INT":
             try:
