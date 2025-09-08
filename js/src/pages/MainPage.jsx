@@ -248,7 +248,126 @@ function App() {
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
-    
+    // Process bypassed nodes
+    for (const dynamicNode of dynamicInputs) {
+        const param_name = dynamicNode.inputs['param_name'];
+        const isBypassed = bypassedState[param_name];
+
+        if (isBypassed) {
+            // Find the node that this CozyGenDynamicInput is connected to
+            let targetNodeId = null;
+            let targetInputName = null;
+
+            for (const nodeId in finalWorkflow) {
+                const node = finalWorkflow[nodeId];
+                for (const inputName in node.inputs) {
+                    const inputValue = node.inputs[inputName];
+                    if (Array.isArray(inputValue) && inputValue[0] == dynamicNode.id) {
+                        targetNodeId = nodeId;
+                        targetInputName = inputName;
+                        break;
+                    }
+                }
+                if (targetNodeId) break;
+            }
+
+            if (targetNodeId) {
+                const targetNode = finalWorkflow[targetNodeId];
+                console.log(`CozyGen: Bypassing node ${targetNodeId} (type: ${targetNode.class_type}) connected to dynamic input ${param_name}`);
+
+                // --- Rewiring Logic ---
+                // This is the complex part. We need to find all inputs to the targetNode
+                // and all nodes that take output from the targetNode, then reconnect them.
+
+                // 1. Identify upstream connections to the targetNode
+                const upstreamConnections = [];
+                for (const inputKey in targetNode.inputs) {
+                    const inputVal = targetNode.inputs[inputKey];
+                    if (Array.isArray(inputVal) && inputVal.length === 2) {
+                        upstreamConnections.push({
+                            sourceNodeId: inputVal[0],
+                            sourceOutputIndex: inputVal[1],
+                            targetInputKey: inputKey // The input name on the target node
+                        });
+                    }
+                }
+
+                // 2. Identify downstream connections from the targetNode
+                const downstreamConnections = [];
+                for (const nodeId in finalWorkflow) {
+                    if (nodeId === targetNodeId) continue; // Skip the target node itself
+                    const node = finalWorkflow[nodeId];
+                    for (const inputKey in node.inputs) {
+                        const inputVal = node.inputs[inputKey];
+                        if (Array.isArray(inputVal) && inputVal.length === 2 && inputVal[0] == targetNodeId) {
+                            downstreamConnections.push({
+                                targetNodeId: nodeId,
+                                targetInputKey: inputKey,
+                                sourceOutputIndex: inputVal[1] // The output index from the target node
+                            });
+                        }
+                    }
+                }
+
+                // Special handling for lora_loader as per example
+                if (targetNode.class_type === 'LoraLoader') {
+                    // Assuming lora_loader has 'model' and 'clip' inputs and outputs
+                    // And the bypass means we want to connect the upstream 'model' to downstream 'model'
+                    // and upstream 'clip' to downstream 'clip'.
+
+                    let upstreamModelConnection = null;
+                    let upstreamClipConnection = null;
+
+                    for (const conn of upstreamConnections) {
+                        if (conn.targetInputKey === 'model') {
+                            upstreamModelConnection = conn;
+                        } else if (conn.targetInputKey === 'clip') {
+                            upstreamClipConnection = conn;
+                        }
+                    }
+
+                    for (const conn of downstreamConnections) {
+                        // Find the corresponding input on the downstream node
+                        // This assumes the output from lora_loader is also 'model' or 'clip'
+                        // and the downstream node expects an input of the same type.
+                        if (conn.sourceOutputIndex === 0 && upstreamModelConnection) { // Assuming model is output 0
+                            finalWorkflow[conn.targetNodeId].inputs[conn.targetInputKey] = [
+                                upstreamModelConnection.sourceNodeId,
+                                upstreamModelConnection.sourceOutputIndex
+                            ];
+                            console.log(`CozyGen: Rewired model from ${upstreamModelConnection.sourceNodeId} to ${conn.targetNodeId}`);
+                        } else if (conn.sourceOutputIndex === 1 && upstreamClipConnection) { // Assuming clip is output 1
+                            finalWorkflow[conn.targetNodeId].inputs[conn.targetInputKey] = [
+                                upstreamClipConnection.sourceNodeId,
+                                upstreamClipConnection.sourceOutputIndex
+                            ];
+                            console.log(`CozyGen: Rewired clip from ${upstreamClipConnection.sourceNodeId} to ${conn.targetNodeId}`);
+                        }
+                    }
+                } else {
+                    // Generic rewiring for other nodes (less robust, might need refinement)
+                    // This assumes a single input/output flow or that all inputs/outputs
+                    // can be directly mapped.
+                    if (upstreamConnections.length === 1 && downstreamConnections.length === 1) {
+                        const upstream = upstreamConnections[0];
+                        const downstream = downstreamConnections[0];
+
+                        finalWorkflow[downstream.targetNodeId].inputs[downstream.targetInputKey] = [
+                            upstream.sourceNodeId,
+                            upstream.sourceOutputIndex
+                        ];
+                        console.log(`CozyGen: Generic rewiring from ${upstream.sourceNodeId} to ${downstream.targetNodeId}`);
+                    } else {
+                        console.warn(`CozyGen: Skipping generic rewiring for node ${targetNodeId} due to complex connections.`);
+                    }
+                }
+
+                // 3. Remove the bypassed node
+                delete finalWorkflow[targetNodeId];
+                console.log(`CozyGen: Removed bypassed node ${targetNodeId}`);
+            }
+        }
+    }
 
     // Note: ComfyUI's API handles link removal automatically when nodes are deleted.
     // We don't need to explicitly manage a `finalWorkflow.links` object here
