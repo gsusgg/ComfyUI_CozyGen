@@ -67,3 +67,16 @@ This Python file defines the HTTP API endpoints that the CozyGen web frontend in
 
 *   **Problem**: The `CozyGenOutput` node (or its predecessor) failed during image saving with this cryptic error, preventing the image from being written to disk.
 *   **Lesson**: This error occurred during the `img.save()` call when attempting to write PNG metadata. The root cause was passing a standard Python `dict` directly to the `pnginfo` argument of Pillow's `Image.save()` method. The Pillow library expects a specific `PIL.PngImagePlugin.PngInfo` object for handling PNG metadata. The solution involved correctly instantiating `PngInfo()`, and then using its `.add_text()` method to add metadata (like `prompt` and `extra_pnginfo`) to this object before passing the `PngInfo` instance to the `save` function. This ensures the metadata is formatted correctly for Pillow.
+
+### 2.4 Error: "Failed to queue prompt" (400 Bad Request) and Bypass Functionality Issues
+
+*   **Problem**: The web UI failed to queue prompts with the ComfyUI backend, resulting in a "400 Bad Request" error. This was particularly prevalent when the "bypass" toggle for `CozyGenDynamicInput` nodes was enabled.
+*   **Investigation & Resolution**:
+    *   **Type Mismatch**: Initial investigation revealed that values from the frontend form were not being correctly converted to the expected Python types (INT, FLOAT, BOOLEAN) before being injected into the workflow JSON sent to ComfyUI. This caused validation errors on the backend. The resolution involved implementing explicit type conversion in `js/src/pages/MainPage.jsx` before injecting dynamic input values into the workflow.
+    *   **Bypass Logic Flaws**: The primary cause of errors when the bypass was enabled was identified as flaws in the frontend's workflow rewiring logic. The original implementation attempted a generic "connect all upstream to all downstream" approach, which created invalid connections for nodes with specific input/output mappings (e.g., `lora_loader` nodes that expect specific `model` and `clip` inputs/outputs). This generic rewiring often resulted in malformed workflow JSON.
+    *   **Bypass Functionality Removal**: Due to the complexity and potential for incorrect rewiring across various node types, the bypass functionality (the code responsible for modifying the workflow JSON to remove bypassed nodes and rewire connections) was completely removed from `js/src/pages/MainPage.jsx`. The "bypass" toggle remains in the UI for future implementation, but it currently has no effect on the generated workflow.
+
+### 2.5 Error: `ReferenceError: label is not defined`
+
+*   **Problem**: A `ReferenceError: label is not defined` occurred in the frontend, preventing proper rendering and functionality.
+*   **Investigation & Resolution**: This error was traced to a debugging `console.log` statement in `js/src/components/DynamicForm.jsx` that was inadvertently causing a conflict or misinterpretation during the JavaScript bundling process. Removing this `console.log` statement resolved the `ReferenceError`.
