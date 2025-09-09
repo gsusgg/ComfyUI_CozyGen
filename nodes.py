@@ -2,12 +2,15 @@ import os
 import json
 import torch
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+from PIL.PngImagePlugin import PngInfo
+import base64 # New import
+from io import BytesIO # New import
 
 import folder_paths
 from nodes import SaveImage
 import server # Import server
-import asyncio # Import asyncio
+import asyncio # Import Import asyncio
 from comfy.comfy_types import node_typing
 
 class _CozyGenDynamicTypes(str):
@@ -73,12 +76,57 @@ class CozyGenDynamicInput:
             value = default_value
         return (value, )
 
-    
 
+class CozyGenImageInput:
+    _NODE_CLASS_NAME = "CozyGenImageInput"
 
-    
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "Image Input"}),
+            },
+            "optional": {
+                "image_base64": ("STRING", {"default": ""}), # New input for base64 string
+            }
+        }
 
-    
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "load_image"
+    CATEGORY = "CozyGen"
+
+    def load_image(self, param_name, image_base64=""): # Accept image_base64
+        if image_base64:
+            try:
+                # Decode base64 string
+                # Assuming the base64 string might have a prefix like "data:image/png;base64,"
+                # We need to strip it if present.
+                if "," in image_base64:
+                    header, base64_data = image_base64.split(",", 1)
+                else:
+                    base64_data = image_base64
+
+                imgdata = base64.b64decode(base64_data)
+                img = Image.open(BytesIO(imgdata))
+
+                # Convert to RGB and then to tensor
+                img = ImageOps.exif_transpose(img)
+                if img.mode == 'RGBA':
+                    image = img.convert('RGB')
+                else:
+                    image = img
+                image = np.array(image).astype(np.float32) / 255.0
+                image = torch.from_numpy(image)[None,]
+                print(f"CozyGenImageInput: Loaded image from base64 for {param_name}.")
+                return (image,)
+            except Exception as e:
+                print(f"CozyGenImageInput: Error decoding base64 image for {param_name}: {e}. Returning placeholder.")
+                return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+        else:
+            # Return a blank image as a placeholder if no base64 data
+            print(f"CozyGenImageInput: No base64 image data provided for {param_name}. Returning placeholder.")
+            return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+
 
 class CozyGenOutput(SaveImage):
     def __init__(self):
@@ -143,10 +191,12 @@ class CozyGenOutput(SaveImage):
 
 NODE_CLASS_MAPPINGS = {
     "CozyGenOutput": CozyGenOutput,
-    "CozyGenDynamicInput": CozyGenDynamicInput, # Added new node
+    "CozyGenDynamicInput": CozyGenDynamicInput,
+    "CozyGenImageInput": CozyGenImageInput,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "CozyGenOutput": "CozyGen Output",
-    "CozyGenDynamicInput": "CozyGen Dynamic Input", # Added new node
+    "CozyGenDynamicInput": "CozyGen Dynamic Input",
+    "CozyGenImageInput": "CozyGen Image Input",
 }
