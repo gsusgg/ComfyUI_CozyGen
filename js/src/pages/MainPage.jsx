@@ -403,11 +403,15 @@ function App() {
     dynamicInputs.forEach(dynamicNode => {
         console.log("Processing dynamicNode:", dynamicNode);
         const param_name = dynamicNode.inputs['param_name'];
+<<<<<<< HEAD
         console.log("param_name:", param_name);
+=======
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
         let valueToInject;
 
         if (dynamicNode.class_type === 'CozyGenImageInput') {
             // For ImageInput, the value is an object { source, path, url }
+<<<<<<< HEAD
             // We need to inject the base64 string into the workflow
             const base64String = formData[param_name]?.url || ''; // Use 'url' which now holds the base64 string
             console.log("base64String:", base64String.substring(0, 30)); // Log first 30 chars
@@ -424,6 +428,27 @@ function App() {
         } else { // CozyGenDynamicInput
             const isRandom = randomizeState[param_name];
 
+=======
+            // We need to inject the path into the workflow
+            valueToInject = formData[param_name]?.path || '';
+            // Find the node in finalWorkflow that this CozyGenImageInput is connected to
+            // and set its image input to the selected image path.
+            for (const nodeId in finalWorkflow) {
+                const node = finalWorkflow[nodeId];
+                for (const inputName in node.inputs) {
+                    const inputValue = node.inputs[inputName];
+                    if (Array.isArray(inputValue) && inputValue[0] == dynamicNode.id) {
+                        // This is the connection from CozyGenImageInput to another node
+                        // Replace the link with the actual image path
+                        node.inputs[inputName] = valueToInject;
+                        break; // Assuming only one connection from this output
+                    }
+                }
+            }
+        } else { // CozyGenDynamicInput
+            const isRandom = randomizeState[param_name];
+
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
             if (isRandom) {
                 const min = dynamicNode.inputs['min_value'] || 0;
                 const max = dynamicNode.inputs['max_value'] || 1000000;
@@ -437,7 +462,10 @@ function App() {
             } else {
                 valueToInject = formData[param_name];
             }
+<<<<<<< HEAD
             console.log("valueToInject:", valueToInject);
+=======
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 
             // Perform type conversion before injecting the value
             switch (dynamicNode.inputs['param_type']) {
@@ -570,7 +598,11 @@ function App() {
                         <ImageInput
                             key={input.id}
                             input={input}
+<<<<<<< HEAD
                             value={formData[input.inputs.param_name]} // Pass the relevant part of formData
+=======
+                            value={formData[input.inputs.image_source]} // Pass the relevant part of formData
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
                             onFormChange={handleFormChange}
                         />
                     ) : null

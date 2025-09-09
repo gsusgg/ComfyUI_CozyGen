@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { getGallery } from '../api';
+=======
+import { getGallery, uploadImage } from '../api';
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 
 const ImageInput = ({ input, value, onFormChange }) => {
     const [imageSource, setImageSource] = useState(value?.source || 'Upload'); // 'Upload' or 'Gallery'
@@ -41,6 +45,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
         onFormChange(input.inputs.param_name, { source: newSource, path: '', url: '' });
     };
 
+<<<<<<< HEAD
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -53,6 +58,21 @@ const ImageInput = ({ input, value, onFormChange }) => {
                 onFormChange(input.inputs.param_name, { source: 'Upload', path: '', url: base64String });
             };
             reader.readAsDataURL(file); // Read file as Data URL
+=======
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setUploadedFile(file);
+            setPreviewUrl(URL.createObjectURL(file)); // Local preview
+            try {
+                const response = await uploadImage(file);
+                // Update form data with the filename returned from the backend
+                onFormChange(input.inputs.param_name, { source: 'Upload', path: response.filename, url: `/view?filename=${response.filename}&subfolder=input&type=input` });
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                setPreviewUrl('');
+            }
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
         }
     };
 

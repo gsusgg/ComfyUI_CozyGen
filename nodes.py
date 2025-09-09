@@ -4,8 +4,11 @@ import torch
 import numpy as np
 from PIL import Image, ImageOps
 from PIL.PngImagePlugin import PngInfo
+<<<<<<< HEAD
 import base64 # New import
 from io import BytesIO # New import
+=======
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 
 import folder_paths
 from nodes import SaveImage
@@ -85,9 +88,12 @@ class CozyGenImageInput:
         return {
             "required": {
                 "param_name": ("STRING", {"default": "Image Input"}),
+<<<<<<< HEAD
             },
             "optional": {
                 "image_base64": ("STRING", {"default": ""}), # New input for base64 string
+=======
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
             }
         }
 
@@ -95,6 +101,7 @@ class CozyGenImageInput:
     FUNCTION = "load_image"
     CATEGORY = "CozyGen"
 
+<<<<<<< HEAD
     def load_image(self, param_name, image_base64=""): # Accept image_base64
         if image_base64:
             try:
@@ -126,6 +133,14 @@ class CozyGenImageInput:
             # Return a blank image as a placeholder if no base64 data
             print(f"CozyGenImageInput: No base64 image data provided for {param_name}. Returning placeholder.")
             return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+=======
+    def load_image(self, param_name):
+        # This node primarily serves as a UI element. The actual image data
+        # will be injected into the workflow JSON by the frontend.
+        # Return a blank image as a placeholder.
+        print(f"CozyGenImageInput: Placeholder image loaded for {param_name}. Frontend will inject actual image.")
+        return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+>>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 
 
 class CozyGenOutput(SaveImage):
