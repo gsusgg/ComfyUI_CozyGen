@@ -2,12 +2,13 @@ import os
 import json
 import torch
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
+from PIL.PngImagePlugin import PngInfo
 
 import folder_paths
 from nodes import SaveImage
 import server # Import server
-import asyncio # Import asyncio
+import asyncio # Import Import asyncio
 from comfy.comfy_types import node_typing
 
 class _CozyGenDynamicTypes(str):
@@ -73,12 +74,29 @@ class CozyGenDynamicInput:
             value = default_value
         return (value, )
 
-    
 
+class CozyGenImageInput:
+    _NODE_CLASS_NAME = "CozyGenImageInput"
 
-    
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "Image Input"}),
+            }
+        }
 
-    
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "load_image"
+    CATEGORY = "CozyGen"
+
+    def load_image(self, param_name):
+        # This node primarily serves as a UI element. The actual image data
+        # will be injected into the workflow JSON by the frontend.
+        # Return a blank image as a placeholder.
+        print(f"CozyGenImageInput: Placeholder image loaded for {param_name}. Frontend will inject actual image.")
+        return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+
 
 class CozyGenOutput(SaveImage):
     def __init__(self):
@@ -143,10 +161,12 @@ class CozyGenOutput(SaveImage):
 
 NODE_CLASS_MAPPINGS = {
     "CozyGenOutput": CozyGenOutput,
-    "CozyGenDynamicInput": CozyGenDynamicInput, # Added new node
+    "CozyGenDynamicInput": CozyGenDynamicInput,
+    "CozyGenImageInput": CozyGenImageInput,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "CozyGenOutput": "CozyGen Output",
-    "CozyGenDynamicInput": "CozyGen Dynamic Input", # Added new node
+    "CozyGenDynamicInput": "CozyGen Dynamic Input",
+    "CozyGenImageInput": "CozyGen Image Input",
 }

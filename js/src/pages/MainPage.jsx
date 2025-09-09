@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import WorkflowSelector from '../components/WorkflowSelector';
 import DynamicForm from '../components/DynamicForm';
+import ImageInput from '../components/ImageInput'; // Import ImageInput
 import { getWorkflows, getWorkflow, queuePrompt, getChoices } from '../api';
 import Modal from 'react-modal';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
@@ -141,12 +142,17 @@ function App() {
         const data = await getWorkflow(selectedWorkflow);
         setWorkflowData(data);
 
-        const inputs = findNodesByType(data, 'CozyGenDynamicInput');
-        inputs.sort((a, b) => (a.inputs['priority'] || 0) - (b.inputs['priority'] || 0));
+        // Find both CozyGenDynamicInput and CozyGenImageInput nodes
+        const dynamicInputsNodes = findNodesByType(data, 'CozyGenDynamicInput');
+        const imageInputNodes = findNodesByType(data, 'CozyGenImageInput');
 
-        // Fetch choices for dropdowns
-        const inputsWithChoices = await Promise.all(inputs.map(async (input) => {
-            if (input.inputs['param_type'] === 'DROPDOWN') {
+        // Combine and sort them by priority (CozyGenDynamicInput only has priority)
+        const allInputs = [...dynamicInputsNodes, ...imageInputNodes];
+        allInputs.sort((a, b) => (a.inputs['priority'] || 0) - (b.inputs['priority'] || 0));
+
+        // Fetch choices for dropdowns (only for CozyGenDynamicInput nodes)
+        const inputsWithChoices = await Promise.all(allInputs.map(async (input) => {
+            if (input.class_type === 'CozyGenDynamicInput' && input.inputs['param_type'] === 'DROPDOWN') {
                 const param_name = input.inputs['param_name'];
                 // New logic: Prioritize 'choice_type' if it exists
                 let choiceType = input.inputs['choice_type'] || (input.properties && input.properties['choice_type']);
@@ -178,14 +184,20 @@ function App() {
         inputsWithChoices.forEach(input => { // Use inputsWithChoices here
             const param_name = input.inputs['param_name'];
             if (savedFormData[param_name] === undefined) {
-                let defaultValue = input.inputs['default_value'];
-                // Convert default value to correct type if necessary
-                if (input.inputs['param_type'] === 'INT') {
-                    defaultValue = parseInt(defaultValue);
-                } else if (input.inputs['param_type'] === 'FLOAT') {
-                    defaultValue = parseFloat(defaultValue);
-                } else if (input.inputs['param_type'] === 'BOOLEAN') {
-                    defaultValue = String(defaultValue).toLowerCase() === 'true';
+                let defaultValue;
+                if (input.class_type === 'CozyGenDynamicInput') {
+                    defaultValue = input.inputs['default_value'];
+                    // Convert default value to correct type if necessary
+                    if (input.inputs['param_type'] === 'INT') {
+                        defaultValue = parseInt(defaultValue);
+                    } else if (input.inputs['param_type'] === 'FLOAT') {
+                        defaultValue = parseFloat(defaultValue);
+                    } else if (input.inputs['param_type'] === 'BOOLEAN') {
+                        defaultValue = String(defaultValue).toLowerCase() === 'true';
+                    }
+                } else if (input.class_type === 'CozyGenImageInput') {
+                    // Default for ImageInput: an object containing source, path, and url
+                    defaultValue = { source: 'Upload', path: '', url: '' };
                 }
                 initialFormData[param_name] = defaultValue;
             } else {
@@ -390,38 +402,69 @@ function App() {
     // Inject the dynamic values into the workflow
     dynamicInputs.forEach(dynamicNode => {
         const param_name = dynamicNode.inputs['param_name'];
-        const isRandom = randomizeState[param_name];
         let valueToInject;
 
-        if (isRandom) {
-            const min = dynamicNode.inputs['min_value'] || 0;
-            const max = dynamicNode.inputs['max_value'] || 1000000;
-            const isFloat = dynamicNode.inputs['param_type'] === 'FLOAT';
-            if (isFloat) {
-                valueToInject = Math.random() * (max - min) + min;
-            } else {
-                valueToInject = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (dynamicNode.class_type === 'CozyGenImageInput') {
+            // For ImageInput, the value is an object { source, path, url }
+            // We need to inject the path into the workflow
+            valueToInject = formData[param_name]?.path || '';
+            // Find the node in finalWorkflow that this CozyGenImageInput is connected to
+            // and set its image input to the selected image path.
+            for (const nodeId in finalWorkflow) {
+                const node = finalWorkflow[nodeId];
+                for (const inputName in node.inputs) {
+                    const inputValue = node.inputs[inputName];
+                    if (Array.isArray(inputValue) && inputValue[0] == dynamicNode.id) {
+                        // This is the connection from CozyGenImageInput to another node
+                        // Replace the link with the actual image path
+                        node.inputs[inputName] = valueToInject;
+                        break; // Assuming only one connection from this output
+                    }
+                }
             }
-            updatedFormData[param_name] = valueToInject; // Update the temporary object
-        } else {
-            valueToInject = formData[param_name];
-        }
+        } else { // CozyGenDynamicInput
+            const isRandom = randomizeState[param_name];
 
-        // Perform type conversion before injecting the value
-        switch (dynamicNode.inputs['param_type']) {
-            case 'INT':
-                valueToInject = parseInt(valueToInject);
-                break;
-            case 'FLOAT':
-                valueToInject = parseFloat(valueToInject);
-                break;
-            case 'BOOLEAN':
-                valueToInject = String(valueToInject).toLowerCase() === 'true';
-                break;
-            case 'STRING':
-            default:
-                // No conversion needed for STRING or unknown types
-                break;
+            if (isRandom) {
+                const min = dynamicNode.inputs['min_value'] || 0;
+                const max = dynamicNode.inputs['max_value'] || 1000000;
+                const isFloat = dynamicNode.inputs['param_type'] === 'FLOAT';
+                if (isFloat) {
+                    valueToInject = Math.random() * (max - min) + min;
+                } else {
+                    valueToInject = Math.floor(Math.random() * (max - min + 1)) + min;
+                }
+                updatedFormData[param_name] = valueToInject; // Update the temporary object
+            } else {
+                valueToInject = formData[param_name];
+            }
+
+            // Perform type conversion before injecting the value
+            switch (dynamicNode.inputs['param_type']) {
+                case 'INT':
+                    // Ensure value is a string before parsing, and handle empty/null/undefined
+                    valueToInject = parseInt(String(valueToInject || '0'), 10);
+                    if (isNaN(valueToInject)) {
+                        valueToInject = 0; // Default to 0 if parsing fails
+                    }
+                    break;
+                case 'FLOAT':
+                    // Ensure value is a string before parsing, and handle empty/null/undefined
+                    valueToInject = parseFloat(String(valueToInject || '0'));
+                    if (isNaN(valueToInject)) {
+                        valueToInject = 0.0; // Default to 0.0 if parsing fails
+                    }
+                    break;
+                case 'BOOLEAN':
+                    // Convert to boolean explicitly, handling various string representations
+                    valueToInject = (String(valueToInject).toLowerCase() === 'true' || valueToInject === true);
+                    break;
+                case 'STRING':
+                default:
+                    // Ensure it's always a string for STRING type, even if it's null/undefined
+                    valueToInject = String(valueToInject || '');
+                    break;
+            }
         }
 
         // Iterate through all nodes in the workflow
@@ -508,15 +551,27 @@ function App() {
                   selectedWorkflow={selectedWorkflow}
                   onSelect={handleWorkflowSelect}
                 />
-                <DynamicForm 
-                  inputs={dynamicInputs}
-                  formData={formData}
-                  onFormChange={handleFormChange}
-                  randomizeState={randomizeState}
-                  onRandomizeToggle={handleRandomizeToggle}
-                  bypassedState={bypassedState}
-                  onBypassToggle={handleBypassToggle}
-                />
+                {dynamicInputs.map(input => (
+                    input.class_type === 'CozyGenDynamicInput' ? (
+                        <DynamicForm 
+                            key={input.id}
+                            inputs={[input]} // Pass as array for DynamicForm
+                            formData={formData}
+                            onFormChange={handleFormChange}
+                            randomizeState={randomizeState}
+                            onRandomizeToggle={handleRandomizeToggle}
+                            bypassedState={bypassedState}
+                            onBypassToggle={handleBypassToggle}
+                        />
+                    ) : input.class_type === 'CozyGenImageInput' ? (
+                        <ImageInput
+                            key={input.id}
+                            input={input}
+                            value={formData[input.inputs.image_source]} // Pass the relevant part of formData
+                            onFormChange={handleFormChange}
+                        />
+                    ) : null
+                ))}
             </div>
         </div>
 

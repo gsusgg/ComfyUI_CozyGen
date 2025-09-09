@@ -28,6 +28,13 @@ When the end-user interacts with the web UI and triggers a generation, the front
     *   **Outputs**: Has a single wildcard (`*`) output that connects to the actual input of other ComfyUI nodes, passing the value determined by the web UI.
     *   **`get_dynamic_value` Method**: Converts the `default_value` (received as a string from the node properties or the web UI) to the appropriate Python type (int, float, boolean, string) based on `param_type`.
 
+*   **`CozyGenImageInput`**:
+    *   **Purpose**: Provides a UI element in the frontend for image selection/upload. The actual image data is injected into the workflow JSON by the frontend.
+    *   **Inputs**:
+        *   `param_name` (string): A name for this image input, used by the frontend to identify and display it.
+    *   **Outputs**: Has a single `IMAGE` output. This output provides a placeholder image; the actual image data is handled by the frontend and injected directly into the workflow JSON.
+    *   **`load_image` Method**: Returns a blank image as a placeholder. The frontend is responsible for injecting the actual image data into the workflow JSON before it's sent to ComfyUI.
+
 *   **`CozyGenOutput`**:
     *   **Purpose**: The final node in a CozyGen workflow, responsible for saving generated images and sending real-time updates to the web UI.
     *   **Inheritance**: Extends ComfyUI's built-in `SaveImage` node.
@@ -47,36 +54,29 @@ This Python file defines the HTTP API endpoints that the CozyGen web frontend in
 
 *   **`/cozygen/hello` (GET)**: A simple endpoint for testing API connectivity.
 *   **`/cozygen/gallery` (GET)**: Retrieves a list of image files and directories from the ComfyUI output folder. It includes functionality to extract prompt and seed metadata from PNG files.
+*   **`/cozygen/upload_image` (POST)**: Handles the upload of image files from the frontend.
+    *   **Purpose**: Allows users to upload images directly to the ComfyUI input directory for use in workflows.
+    *   **Inputs**: Expects a multipart form data request with a field named `image` containing the image file.
+    *   **Outputs**: Returns a JSON response with the `filename` of the saved image and its `size`.
 *   **`/cozygen/workflows` (GET)**: Returns a list of available workflow JSON filenames located in the `ComfyUI_CozyGen/workflows/` directory.
 *   **`/cozygen/workflows/{filename}` (GET)**: Fetches the content of a specific workflow JSON file.
 *   **`/cozygen/get_choices` (GET)**: Provides dynamic lists of choices (e.g., schedulers, samplers, or model names) that can be used for dropdown inputs in the web UI.
 
-## 2. Errors Encountered & Lessons Learned
+#### 1.3.4 `js/src/api.js` - Frontend API Functions
 
-### 2.1 Frontend Build Failure: The Unstyled Page
+This JavaScript file contains functions for the frontend to interact with the CozyGen backend API.
 
-*   **Problem**: During initial setup, the React/Vite frontend rendered as an unstyled white page. This indicated a fundamental breakdown in the build process where Tailwind CSS was failing to scan components and generate necessary utility classes, or the build output was not correctly integrated.
-*   **Investigation & Resolution**: Initial checks of `tailwind.config.js`, `postcss.config.js`, and CSS imports showed correct configuration. The issue was often related to incorrect paths for Tailwind to scan or build script inconsistencies. The resolution typically involved ensuring `tailwind.config.js`'s `content` array correctly pointed to all source files (`./index.html`, `./src/**/*.{js,ts,jsx,tsx}`), verifying `postcss.config.js` was correctly configured, and ensuring `vite.config.js` was set up for React. Sometimes, a clean rebuild (`npm install` after deleting `node_modules` and `package-lock.json`) or re-initializing the project with `npm create vite@latest` and manually migrating code was necessary to resolve deep-seated dependency or configuration issues.
+*   **`uploadImage(imageFile)`**: Uploads an image file to the backend.
+    *   **Purpose**: Sends a selected image file from the user's local machine to the `/cozygen/upload_image` endpoint.
+    *   **Parameters**: `imageFile` (File object) - The image file to be uploaded.
+    *   **Returns**: A Promise that resolves with the JSON response from the backend, typically containing the filename of the uploaded image.
 
-### 2.2 Error: Node UI Fails to Update
+#### 1.3.5 `js/src/pages/MainPage.jsx` - Main Application Logic
 
-*   **Problem**: In the ComfyUI editor, connecting a `CozyGenDynamicInput` node's output sometimes did not immediately trigger the expected UI updates or widget modifications on the node itself. The developer console might show `TypeError` related to DOM elements being undefined.
-*   **Lesson**: This often points to a JavaScript race condition. The script might be attempting to access or modify DOM properties of a widget or element before the browser has fully rendered it. The fix typically involves deferring the DOM-manipulation logic using `setTimeout(() => {...}, 0)` or `requestAnimationFrame`, allowing the browser's event loop to complete rendering before the script attempts to interact with the elements.
+This React component is the main page for the CozyGen web interface, responsible for fetching workflows, managing form data, and handling prompt queuing.
 
-### 2.3 Error: `'dict' object has no attribute 'chunks'`
-
-*   **Problem**: The `CozyGenOutput` node (or its predecessor) failed during image saving with this cryptic error, preventing the image from being written to disk.
-*   **Lesson**: This error occurred during the `img.save()` call when attempting to write PNG metadata. The root cause was passing a standard Python `dict` directly to the `pnginfo` argument of Pillow's `Image.save()` method. The Pillow library expects a specific `PIL.PngImagePlugin.PngInfo` object for handling PNG metadata. The solution involved correctly instantiating `PngInfo()`, and then using its `.add_text()` method to add metadata (like `prompt` and `extra_pnginfo`) to this object before passing the `PngInfo` instance to the `save` function. This ensures the metadata is formatted correctly for Pillow.
-
-### 2.4 Error: "Failed to queue prompt" (400 Bad Request) and Bypass Functionality Issues
-
-*   **Problem**: The web UI failed to queue prompts with the ComfyUI backend, resulting in a "400 Bad Request" error. This was particularly prevalent when the "bypass" toggle for `CozyGenDynamicInput` nodes was enabled.
-*   **Investigation & Resolution**:
-    *   **Type Mismatch**: Initial investigation revealed that values from the frontend form were not being correctly converted to the expected Python types (INT, FLOAT, BOOLEAN) before being injected into the workflow JSON sent to ComfyUI. This caused validation errors on the backend. The resolution involved implementing explicit type conversion in `js/src/pages/MainPage.jsx` before injecting dynamic input values into the workflow.
-    *   **Bypass Logic Flaws**: The primary cause of errors when the bypass was enabled was identified as flaws in the frontend's workflow rewiring logic. The original implementation attempted a generic "connect all upstream to all downstream" approach, which created invalid connections for nodes with specific input/output mappings (e.g., `lora_loader` nodes that expect specific `model` and `clip` inputs/outputs). This generic rewiring often resulted in malformed workflow JSON.
-    *   **Bypass Functionality Removal**: Due to the complexity and potential for incorrect rewiring across various node types, the bypass functionality (the code responsible for modifying the workflow JSON to remove bypassed nodes and rewire connections) was completely removed from `js/src/pages/MainPage.jsx`. The "bypass" toggle remains in the UI for future implementation, but it currently has no effect on the generated workflow.
-
-### 2.5 Error: `ReferenceError: label is not defined`
-
-*   **Problem**: A `ReferenceError: label is not defined` occurred in the frontend, preventing proper rendering and functionality.
-*   **Investigation & Resolution**: This error was traced to a debugging `console.log` statement in `js/src/components/DynamicForm.jsx` that was inadvertently causing a conflict or misinterpretation during the JavaScript bundling process. Removing this `console.log` statement resolved the `ReferenceError`.
+*   **Integration of `CozyGenImageInput`**: The `MainPage.jsx` now recognizes and handles the `CozyGenImageInput` node type.
+    *   It uses `findNodesByType` to identify both `CozyGenDynamicInput` and `CozyGenImageInput` nodes in the loaded workflow.
+    *   The `useEffect` hook responsible for fetching workflow data now initializes `formData` for `CozyGenImageInput` nodes, setting default values based on the node's properties.
+    *   The `handleGenerate` function has been updated to correctly extract the image path (or uploaded filename) from the `formData` for `CozyGenImageInput` nodes and inject it into the workflow JSON sent to the ComfyUI backend.
+    *   The rendering logic (`return` statement) has been modified to conditionally render the new `ImageInput` component when a `CozyGenImageInput` node is encountered, passing the necessary props (`input`, `value`, `onFormChange`).
