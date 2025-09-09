@@ -7,10 +7,9 @@
 This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but wanted to share a working LLM assisted projected. Everything AFTER this disclaimer section is 99% made by an LLM. I just wanted to make dumb cat pictures with my desktop ComfyUI from my phone, so now this exists. Thanks to @acly and the comfyui-tooling-nodes for the inspiration.
 
 Known Issues:
-*  Not all dropdowns populate in the webpage.
-*  Connecting a node to multiple fields does not work (for example: an int type for "Height" going to two height nodes does not work).
+
 *  If you use a batch higher than 1 they will generate and show in the gallery, but the preview only displays the first image of the batch.
-*  Currently only t2i workflows have been tested. I plan to add i2i, t2v, i2v, and other types, but no promises (this is a hobby project).
+*  Currently only t2i workflows work. I plan to add i2i, t2v, i2v, and other types, but no promises (this is a hobby project).
 
 Changelog:
 *  8/29/2025 - Initial release
@@ -118,7 +117,7 @@ http://<your-comfyui-ip>:8188/cozygen
 
 ## 🤝 Contributing
 
-I do not plan to update this further, but wanted to share what I had. Feel free to take it and update it on your own!
+I do not plan to update this forever, but wanted to share what I have. Feel free to take it and update it on your own!
 
 ## 📄 License
 
