@@ -6,22 +6,13 @@ __pycache__/
 *.pyc
 
 # Generated files and logs
-<<<<<<< HEAD
-docs/
-
-=======
 *.png
 *.log
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
+logs
 
 # Gemini related files
 GEMINI.md
 
-# Logs
-<<<<<<< HEAD
-=======
-logs
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -47,4 +38,4 @@ node_modules/
 # tasks/ 
 
 # Cursor related files
-.cursor/ 
+.cursor/

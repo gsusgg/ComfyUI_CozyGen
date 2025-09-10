@@ -81,66 +81,49 @@ class CozyGenDynamicInput:
 
 
 class CozyGenImageInput:
-    _NODE_CLASS_NAME = "CozyGenImageInput"
-
     @classmethod
     def INPUT_TYPES(s):
+        # This input now correctly accepts a STRING, which will be our Base64 data.
         return {
             "required": {
-                "param_name": ("STRING", {"default": "Image Input"}),
-<<<<<<< HEAD
-            },
-            "optional": {
-                "image_base64": ("STRING", {"default": ""}), # New input for base64 string
-=======
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
+                "base64_image": ("STRING", {"multiline": True, "default": ""}),
             }
         }
 
-    RETURN_TYPES = ("IMAGE",)
+    # The return types are now the standard IMAGE and MASK for ComfyUI image loaders.
+    RETURN_TYPES = ("IMAGE", "MASK")
     FUNCTION = "load_image"
     CATEGORY = "CozyGen"
 
-<<<<<<< HEAD
-    def load_image(self, param_name, image_base64=""): # Accept image_base64
-        if image_base64:
-            try:
-                # Decode base64 string
-                # Assuming the base64 string might have a prefix like "data:image/png;base64,"
-                # We need to strip it if present.
-                if "," in image_base64:
-                    header, base64_data = image_base64.split(",", 1)
-                else:
-                    base64_data = image_base64
+    def load_image(self, base64_image):
+        # This function contains the logic for decoding the string and preparing the image tensor.
+        
+        # Remove the data URL prefix if it exists (e.g., "data:image/png;base64,")
+        if "," in base64_image:
+            base64_image = base64_image.split(',')[1]
 
-                imgdata = base64.b64decode(base64_data)
-                img = Image.open(BytesIO(imgdata))
+        # Decode the Base64 string into bytes
+        img_data = base64.b64decode(base64_image)
+        
+        # Open the image data using the Pillow library
+        img = Image.open(io.BytesIO(img_data))
+        
+        # Convert the image to a NumPy array and normalize its values to the 0.0-1.0 range
+        image_np = np.array(img).astype(np.float32) / 255.0
+        
+        # Convert the NumPy array to a PyTorch tensor and add a batch dimension
+        image_tensor = torch.from_numpy(image_np)[None,]
 
-                # Convert to RGB and then to tensor
-                img = ImageOps.exif_transpose(img)
-                if img.mode == 'RGBA':
-                    image = img.convert('RGB')
-                else:
-                    image = img
-                image = np.array(image).astype(np.float32) / 255.0
-                image = torch.from_numpy(image)[None,]
-                print(f"CozyGenImageInput: Loaded image from base64 for {param_name}.")
-                return (image,)
-            except Exception as e:
-                print(f"CozyGenImageInput: Error decoding base64 image for {param_name}: {e}. Returning placeholder.")
-                return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
+        # Handle images with an alpha channel (transparency) to create a mask
+        if 'A' in img.getbands():
+            mask = image_tensor[:, :, :, 3]
+            image = image_tensor[:, :, :, :3] # Keep only the RGB channels for the image
         else:
-            # Return a blank image as a placeholder if no base64 data
-            print(f"CozyGenImageInput: No base64 image data provided for {param_name}. Returning placeholder.")
-            return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
-=======
-    def load_image(self, param_name):
-        # This node primarily serves as a UI element. The actual image data
-        # will be injected into the workflow JSON by the frontend.
-        # Return a blank image as a placeholder.
-        print(f"CozyGenImageInput: Placeholder image loaded for {param_name}. Frontend will inject actual image.")
-        return (torch.zeros((1, 64, 64, 3), dtype=torch.float32),)
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
+            # If no alpha channel, the mask is all white (fully opaque)
+            mask = torch.ones_like(image_tensor[:, :, :, 0])
+            image = image_tensor
+
+        return (image, mask)
 
 
 class CozyGenOutput(SaveImage):

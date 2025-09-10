@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { getGallery } from '../api';
-=======
 import { getGallery, uploadImage } from '../api';
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
 
 const ImageInput = ({ input, value, onFormChange }) => {
     const [imageSource, setImageSource] = useState(value?.source || 'Upload'); // 'Upload' or 'Gallery'
@@ -22,18 +18,22 @@ const ImageInput = ({ input, value, onFormChange }) => {
                 console.error("Error fetching gallery items:", error);
             }
         };
-        fetchGallery();
-    }, [currentGalleryPath]);
+        if (input.class_type !== 'CozyGenImageInput') { // Only fetch gallery if not CozyGenImageInput
+            fetchGallery();
+        }
+    }, [currentGalleryPath, input.class_type]);
 
     useEffect(() => {
         // When the component mounts or input changes, set the initial preview URL
-        if (value?.url) {
+        if (input.class_type === 'CozyGenImageInput') {
+            setPreviewUrl(value || ''); // value is now the base64 string directly
+        } else if (value?.url) {
             setPreviewUrl(value.url);
         } else if (value?.path && imageSource === 'Gallery') {
             // Construct URL for gallery image
             setPreviewUrl(`/view?filename=${value.path}&subfolder=&type=output`);
         }
-    }, [value, imageSource]);
+    }, [value, imageSource, input.class_type]);
 
     const handleImageSourceChange = (e) => {
         const newSource = e.target.value;
@@ -45,20 +45,6 @@ const ImageInput = ({ input, value, onFormChange }) => {
         onFormChange(input.inputs.param_name, { source: newSource, path: '', url: '' });
     };
 
-<<<<<<< HEAD
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setUploadedFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result; // This is the Data URL (Base64)
-                setPreviewUrl(base64String); // Use base64 string for local preview
-                // Update form data with the base64 string
-                onFormChange(input.inputs.param_name, { source: 'Upload', path: '', url: base64String });
-            };
-            reader.readAsDataURL(file); // Read file as Data URL
-=======
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -72,7 +58,6 @@ const ImageInput = ({ input, value, onFormChange }) => {
                 console.error("Error uploading image:", error);
                 setPreviewUrl('');
             }
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
         }
     };
 
@@ -105,59 +90,75 @@ const ImageInput = ({ input, value, onFormChange }) => {
             <label className="label">
                 <span className="label-text text-lg font-semibold">{input.inputs.param_name}</span>
             </label>
-            <div className="flex items-center space-x-2 mb-4">
-                <select
-                    className="select select-bordered w-full max-w-xs"
-                    value={imageSource}
-                    onChange={handleImageSourceChange}
-                >
-                    <option value="Upload">Upload Image</option>
-                    <option value="Gallery">Select from Gallery</option>
-                </select>
-                <button onClick={handleClearImage} className="btn btn-sm btn-outline">Clear</button>
-            </div>
 
-            {imageSource === 'Upload' && (
+            {input.class_type === 'CozyGenImageInput' ? (
+                // Simplified UI for CozyGenImageInput
                 <div className="mb-4">
-                    <input
-                        type="file"
-                        className="file-input file-input-bordered w-full"
-                        onChange={handleFileChange}
-                        accept="image/*"
-                    />
-                </div>
-            )}
-
-            {imageSource === 'Gallery' && (
-                <div className="mb-4">
-                    <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm text-gray-400">Current Path: {currentGalleryPath || '/'}</span>
-                        {currentGalleryPath && (
-                            <button onClick={() => navigateGallery('')} className="btn btn-xs btn-ghost">Back to Root</button>
-                        )}
-                    </div>
-                    <select
-                        className="select select-bordered w-full"
-                        value={selectedGalleryImage}
-                        onChange={handleGallerySelect}
-                    >
-                        <option value="">-- Select an image or directory --</option>
-                        {galleryItems.map((item, index) => (
-                            <option key={index} value={item.filename}>
-                                {item.type === 'directory' ? `[DIR] ${item.filename}` : item.filename}
-                            </option>
-                        ))}
-                    </select>
-                    {selectedGalleryImage && galleryItems.find(item => item.filename === selectedGalleryImage && item.type === 'directory') && (
-                        <button onClick={() => navigateGallery(selectedGalleryImage)} className="btn btn-sm btn-primary mt-2">Open Directory</button>
+                    <p className="text-gray-400">Image will be provided by the main uploader.</p>
+                    {previewUrl && (
+                        <div className="mt-4 flex justify-center">
+                            <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />
+                        </div>
                     )}
                 </div>
-            )}
+            ) : (
+                // Existing UI for other image input types
+                <>
+                    <div className="flex items-center space-x-2 mb-4">
+                        <select
+                            className="select select-bordered w-full max-w-xs"
+                            value={imageSource}
+                            onChange={handleImageSourceChange}
+                        >
+                            <option value="Upload">Upload Image</option>
+                            <option value="Gallery">Select from Gallery</option>
+                        </select>
+                        <button onClick={handleClearImage} className="btn btn-sm btn-outline">Clear</button>
+                    </div>
 
-            {previewUrl && (
-                <div className="mt-4 flex justify-center">
-                    <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />
-                </div>
+                    {imageSource === 'Upload' && (
+                        <div className="mb-4">
+                            <input
+                                type="file"
+                                className="file-input file-input-bordered w-full"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                            />
+                        </div>
+                    )}
+
+                    {imageSource === 'Gallery' && (
+                        <div className="mb-4">
+                            <div className="flex items-center space-x-2 mb-2">
+                                <span className="text-sm text-gray-400">Current Path: {currentGalleryPath || '/'}</span>
+                                {currentGalleryPath && (
+                                    <button onClick={() => navigateGallery('')} className="btn btn-xs btn-ghost">Back to Root</button>
+                                )}
+                            </div>
+                            <select
+                                className="select select-bordered w-full"
+                                value={selectedGalleryImage}
+                                onChange={handleGallerySelect}
+                            >
+                                <option value="">-- Select an image or directory --</option>
+                                {galleryItems.map((item, index) => (
+                                    <option key={index} value={item.filename}>
+                                        {item.type === 'directory' ? `[DIR] ${item.filename}` : item.filename}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedGalleryImage && galleryItems.find(item => item.filename === selectedGalleryImage && item.type === 'directory') && (
+                                <button onClick={() => navigateGallery(selectedGalleryImage)} className="btn btn-sm btn-primary mt-2">Open Directory</button>
+                            )}
+                        </div>
+                    )}
+
+                    {previewUrl && (
+                        <div className="mt-4 flex justify-center">
+                            <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

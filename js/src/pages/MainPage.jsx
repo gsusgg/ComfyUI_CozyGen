@@ -64,6 +64,7 @@ function App() {
   const [progressValue, setProgressValue] = useState(0);
   const [progressMax, setProgressMax] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [uploadedImageBase64, setUploadedImageBase64] = useState(null); // New state for uploaded image
 
   const openModalWithImage = (imageSrc) => {
     setSelectedPreviewImage(imageSrc);
@@ -196,8 +197,8 @@ function App() {
                         defaultValue = String(defaultValue).toLowerCase() === 'true';
                     }
                 } else if (input.class_type === 'CozyGenImageInput') {
-                    // Default for ImageInput: an object containing source, path, and url
-                    defaultValue = { source: 'Upload', path: '', url: '' };
+                    // Default for CozyGenImageInput is now an empty string for the base64_image
+                    defaultValue = '';
                 }
                 initialFormData[param_name] = defaultValue;
             } else {
@@ -247,6 +248,18 @@ function App() {
     const newBypassedState = { ...bypassedState, [inputName]: isBypassed };
     setBypassedState(newBypassedState);
     localStorage.setItem(`${selectedWorkflow}_bypassedState`, JSON.stringify(newBypassedState));
+  };
+
+  const handleImageUpload = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+          setUploadedImageBase64(e.target.result);
+          console.log("Image has been converted to Base64.");
+      };
+      reader.readAsDataURL(file);
   };
 
   const handleGenerate = async () => {
@@ -397,102 +410,77 @@ function App() {
         }
     }
 
+    // Inject the Base64 string into the CozyGenImageInput node
+    const cozyGenImageInputNode = Object.values(finalWorkflow).find(
+        node => node.class_type === 'CozyGenImageInput'
+    );
+
+    if (cozyGenImageInputNode) {
+        if (!uploadedImageBase64) {
+            alert("Please upload an image using the uploader before generating.");
+            setIsLoading(false);
+            return;
+        }
+        cozyGenImageInputNode.inputs.base64_image = uploadedImageBase64;
+        console.log("Injected Base64 image into CozyGenImageInput node:", cozyGenImageInputNode.id);
+    } else {
+        console.warn("No CozyGenImageInput node found in the workflow. Skipping Base64 injection.");
+    }
+
     let updatedFormData = { ...formData }; // Start with current formData
 
     // Inject the dynamic values into the workflow
     dynamicInputs.forEach(dynamicNode => {
         console.log("Processing dynamicNode:", dynamicNode);
         const param_name = dynamicNode.inputs['param_name'];
-<<<<<<< HEAD
-        console.log("param_name:", param_name);
-=======
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
         let valueToInject;
 
+        // Skip CozyGenImageInput as its handling is now separate
         if (dynamicNode.class_type === 'CozyGenImageInput') {
-            // For ImageInput, the value is an object { source, path, url }
-<<<<<<< HEAD
-            // We need to inject the base64 string into the workflow
-            const base64String = formData[param_name]?.url || ''; // Use 'url' which now holds the base64 string
-            console.log("base64String:", base64String.substring(0, 30)); // Log first 30 chars
+            return;
+        }
 
-            // Find the CozyGenImageInput node in finalWorkflow and set its 'image_base64' input
-            for (const nodeId in finalWorkflow) {
-                const node = finalWorkflow[nodeId];
-                if (node.class_type === 'CozyGenImageInput' && node.inputs['param_name'] === param_name) {
-                    console.log(`Found CozyGenImageInput node ${nodeId} to update`);
-                    node.inputs['image_base64'] = base64String; // Set the image_base64 input
-                    break;
-                }
-            }
-        } else { // CozyGenDynamicInput
-            const isRandom = randomizeState[param_name];
+        const isRandom = randomizeState[param_name];
 
-=======
-            // We need to inject the path into the workflow
-            valueToInject = formData[param_name]?.path || '';
-            // Find the node in finalWorkflow that this CozyGenImageInput is connected to
-            // and set its image input to the selected image path.
-            for (const nodeId in finalWorkflow) {
-                const node = finalWorkflow[nodeId];
-                for (const inputName in node.inputs) {
-                    const inputValue = node.inputs[inputName];
-                    if (Array.isArray(inputValue) && inputValue[0] == dynamicNode.id) {
-                        // This is the connection from CozyGenImageInput to another node
-                        // Replace the link with the actual image path
-                        node.inputs[inputName] = valueToInject;
-                        break; // Assuming only one connection from this output
-                    }
-                }
-            }
-        } else { // CozyGenDynamicInput
-            const isRandom = randomizeState[param_name];
-
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
-            if (isRandom) {
-                const min = dynamicNode.inputs['min_value'] || 0;
-                const max = dynamicNode.inputs['max_value'] || 1000000;
-                const isFloat = dynamicNode.inputs['param_type'] === 'FLOAT';
-                if (isFloat) {
-                    valueToInject = Math.random() * (max - min) + min;
-                } else {
-                    valueToInject = Math.floor(Math.random() * (max - min + 1)) + min;
-                }
-                updatedFormData[param_name] = valueToInject; // Update the temporary object
+        if (isRandom) {
+            const min = dynamicNode.inputs['min_value'] || 0;
+            const max = dynamicNode.inputs['max_value'] || 1000000;
+            const isFloat = dynamicNode.inputs['param_type'] === 'FLOAT';
+            if (isFloat) {
+                valueToInject = Math.random() * (max - min) + min;
             } else {
-                valueToInject = formData[param_name];
+                valueToInject = Math.floor(Math.random() * (max - min + 1)) + min;
             }
-<<<<<<< HEAD
-            console.log("valueToInject:", valueToInject);
-=======
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
+            updatedFormData[param_name] = valueToInject; // Update the temporary object
+        } else {
+            valueToInject = formData[param_name];
+        }
 
-            // Perform type conversion before injecting the value
-            switch (dynamicNode.inputs['param_type']) {
-                case 'INT':
-                    // Ensure value is a string before parsing, and handle empty/null/undefined
-                    valueToInject = parseInt(String(valueToInject || '0'), 10);
-                    if (isNaN(valueToInject)) {
-                        valueToInject = 0; // Default to 0 if parsing fails
-                    }
-                    break;
-                case 'FLOAT':
-                    // Ensure value is a string before parsing, and handle empty/null/undefined
-                    valueToInject = parseFloat(String(valueToInject || '0'));
-                    if (isNaN(valueToInject)) {
-                        valueToInject = 0.0; // Default to 0.0 if parsing fails
-                    }
-                    break;
-                case 'BOOLEAN':
-                    // Convert to boolean explicitly, handling various string representations
-                    valueToInject = (String(valueToInject).toLowerCase() === 'true' || valueToInject === true);
-                    break;
-                case 'STRING':
-                default:
-                    // Ensure it's always a string for STRING type, even if it's null/undefined
-                    valueToInject = String(valueToInject || '');
-                    break;
-            }
+        // Perform type conversion before injecting the value
+        switch (dynamicNode.inputs['param_type']) {
+            case 'INT':
+                // Ensure value is a string before parsing, and handle empty/null/undefined
+                valueToInject = parseInt(String(valueToInject || '0'), 10);
+                if (isNaN(valueToInject)) {
+                    valueToInject = 0; // Default to 0 if parsing fails
+                }
+                break;
+            case 'FLOAT':
+                // Ensure value is a string before parsing, and handle empty/null/undefined
+                valueToInject = parseFloat(String(valueToInject || '0'));
+                if (isNaN(valueToInject)) {
+                    valueToInject = 0.0; // Default to 0.0 if parsing fails
+                }
+                break;
+            case 'BOOLEAN':
+                // Convert to boolean explicitly, handling various string representations
+                valueToInject = (String(valueToInject).toLowerCase() === 'true' || valueToInject === true);
+                break;
+            case 'STRING':
+            default:
+                // Ensure it's always a string for STRING type, even if it's null/undefined
+                valueToInject = String(valueToInject || '');
+                break;
         }
 
         // Iterate through all nodes in the workflow
@@ -502,7 +490,7 @@ function App() {
             for (const inputName in node.inputs) {
                 const inputValue = node.inputs[inputName];
                 // Check if the input is a link array and if it links to the current dynamicNode
-                if (Array.isArray(inputValue) && String(inputValue[0]) === String(dynamicNode.id) && dynamicNode.class_type !== 'CozyGenImageInput') {
+                if (Array.isArray(inputValue) && String(inputValue[0]) === String(dynamicNode.id)) {
                     console.log(`Replacing link in node ${nodeId}, input ${inputName} with value:`, valueToInject);
                     // Replace the link with the actual value
                     node.inputs[inputName] = valueToInject;
@@ -582,6 +570,17 @@ function App() {
                   selectedWorkflow={selectedWorkflow}
                   onSelect={handleWorkflowSelect}
                 />
+                {/* New Image Upload Section */}
+                <div className="bg-base-200 shadow-lg rounded-lg p-4">
+                    <h2 className="text-xl font-semibold text-white mb-4">Upload Image for Workflow</h2>
+                    <input
+                        type="file"
+                        id="imageUploader"
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={handleImageUpload}
+                        className="file-input file-input-bordered w-full mb-4"
+                    />
+                </div>
                 {dynamicInputs.map(input => (
                     input.class_type === 'CozyGenDynamicInput' ? (
                         <DynamicForm 
@@ -598,11 +597,7 @@ function App() {
                         <ImageInput
                             key={input.id}
                             input={input}
-<<<<<<< HEAD
                             value={formData[input.inputs.param_name]} // Pass the relevant part of formData
-=======
-                            value={formData[input.inputs.image_source]} // Pass the relevant part of formData
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
                             onFormChange={handleFormChange}
                         />
                     ) : null
