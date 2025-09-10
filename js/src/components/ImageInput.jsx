@@ -8,6 +8,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
     const [previewUrl, setPreviewUrl] = useState(value?.url || '');
     const [galleryItems, setGalleryItems] = useState([]);
     const [currentGalleryPath, setCurrentGalleryPath] = useState('');
+    const [smartResize, setSmartResize] = useState(true);
 
     useEffect(() => {
         const fetchGallery = async () => {
@@ -88,16 +89,52 @@ const ImageInput = ({ input, value, onFormChange }) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setPreviewUrl(URL.createObjectURL(file)); // Local preview immediately
+        if (smartResize) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = async () => {
+                    let { width, height } = img;
+                    const sum = width + height;
+                    if (sum > 2048) {
+                        const ratio = width / height;
+                        width = Math.floor(2048 * ratio / (ratio + 1));
+                        height = 2048 - width;
+                    }
 
-        try {
-            const response = await uploadImage(file); // Upload image to backend
-            const imageUrl = `/view?filename=${response.filename}&subfolder=input&type=input`; // Construct URL
-            setPreviewUrl(imageUrl); // Update preview with actual URL
-            onFormChange(input.inputs.param_name, response.filename); // Store filename in formData
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            setPreviewUrl(''); // Clear preview on error
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(async (blob) => {
+                        const resizedFile = new File([blob], file.name, { type: file.type });
+                        setPreviewUrl(URL.createObjectURL(resizedFile));
+                        try {
+                            const response = await uploadImage(resizedFile);
+                            const imageUrl = `/view?filename=${response.filename}&subfolder=input&type=input`;
+                            setPreviewUrl(imageUrl);
+                            onFormChange(input.inputs.param_name, response.filename);
+                        } catch (error) {
+                            console.error("Error uploading image:", error);
+                            setPreviewUrl('');
+                        }
+                    }, file.type);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setPreviewUrl(URL.createObjectURL(file));
+            try {
+                const response = await uploadImage(file);
+                const imageUrl = `/view?filename=${response.filename}&subfolder=input&type=input`;
+                setPreviewUrl(imageUrl);
+                onFormChange(input.inputs.param_name, response.filename);
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                setPreviewUrl('');
+            }
         }
     };
 
@@ -122,6 +159,12 @@ const ImageInput = ({ input, value, onFormChange }) => {
                         onChange={handleCozyGenFileChange}
                         className="file-input file-input-bordered w-full mb-4"
                     />
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Smart Resize</span> 
+                            <input type="checkbox" class="toggle" checked={smartResize} onChange={() => setSmartResize(!smartResize)} />
+                        </label>
+                    </div>
                     {previewUrl && (
                         <div className="mt-4 flex justify-center">
                             <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />

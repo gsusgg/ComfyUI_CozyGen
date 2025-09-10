@@ -143,6 +143,16 @@ function App() {
         const data = await getWorkflow(selectedWorkflow);
         setWorkflowData(data);
 
+        // Ensure param_name is present in CozyGenImageInput nodes within the workflowData
+        for (const nodeId in data) {
+            const node = data[nodeId];
+            if (node.class_type === 'CozyGenImageInput') {
+                if (!node.inputs.param_name) {
+                    node.inputs.param_name = "Image Input"; // Set default if missing
+                }
+            }
+        }
+
         // Find both CozyGenDynamicInput and CozyGenImageInput nodes
         const dynamicInputsNodes = findNodesByType(data, 'CozyGenDynamicInput');
         const imageInputNodes = findNodesByType(data, 'CozyGenImageInput');
@@ -258,6 +268,17 @@ function App() {
     setPreviewImage(null);
 
     let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
+
+    // First, ensure all CozyGenImageInput nodes in finalWorkflow have a param_name.
+    for (const nodeId in finalWorkflow) {
+        const node = finalWorkflow[nodeId];
+        if (node.class_type === 'CozyGenImageInput') {
+            const dynamicInput = dynamicInputs.find(input => input.id === nodeId);
+            if (dynamicInput) {
+                node.inputs.param_name = dynamicInput.inputs.param_name;
+            }
+        }
+    }
 
     // Process bypassed nodes
     for (const dynamicNode of dynamicInputs) {
@@ -400,22 +421,23 @@ function App() {
         }
     }
 
-    // Inject Base64 strings into all CozyGenImageInput nodes
+    // Inject image filenames into all CozyGenImageInput nodes
     const imageInputNodesInWorkflow = Object.values(finalWorkflow).filter(
         node => node.class_type === 'CozyGenImageInput'
     );
 
     if (imageInputNodesInWorkflow.length > 0) {
         for (const node of imageInputNodesInWorkflow) {
-            const param_name = node.inputs.param_name;
-            const base64Image = formData[param_name]; // Get the Base64 string from formData
+            const param_name = node.inputs.param_name; // Now it should be present
+            const image_filename = formData[param_name];
 
-            // No alert here, as ImageInput component will handle its own validation
-            node.inputs.base64_image = base64Image;
-            console.log(`Injected Base64 image into CozyGenImageInput node "${param_name}" (${node.id})`);
+            if (!image_filename) {
+                alert(`Please upload an image for "${param_name}" before generating.`);
+                setIsLoading(false);
+                return;
+            }
+            node.inputs.image_filename = image_filename;
         }
-    } else {
-        console.warn("No CozyGenImageInput node found in the workflow. Skipping Base64 injection.");
     }
 
     let updatedFormData = { ...formData }; // Start with current formData

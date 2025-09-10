@@ -159,8 +159,12 @@ const Gallery = () => {
                                     )}
                                     {selectedItem.metadata.full_workflow && (
                                         <div className="mt-4">
-                                            <h3 className="font-semibold text-gray-400">Full Workflow:</h3>
-                                            <pre className="text-white">{JSON.stringify(selectedItem.metadata.full_workflow, null, 2)}</pre>
+                                            <button 
+                                                onClick={() => navigator.clipboard.writeText(JSON.stringify(selectedItem.metadata.full_workflow, null, 2))}
+                                                className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+                                            >
+                                                Copy Workflow to Clipboard
+                                            </button>
                                         </div>
                                     )}
                                 </div>

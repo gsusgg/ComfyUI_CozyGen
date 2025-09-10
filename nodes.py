@@ -84,7 +84,7 @@ class CozyGenImageInput:
         return {
             "required": {
                 "param_name": ("STRING", {"default": "Image Input"}),
-                "base64_image": ("STRING", {"multiline": True, "default": ""}),
+                "image_filename": ("STRING", {"default": ""}),
             }
         }
 
@@ -93,24 +93,10 @@ class CozyGenImageInput:
     FUNCTION = "load_image"
     CATEGORY = "CozyGen"
 
-    def load_image(self, param_name, base64_image):
-        from io import BytesIO # Temporary workaround for io NameError
-        # This function contains the logic for decoding the string and preparing the image tensor.
-        
-        # Remove the data URL prefix if it exists (e.g., "data:image/png;base64,")
-        if "," in base64_image:
-            base64_image = base64_image.split(',')[1]
-
-        # Decode the Base64 string into bytes
-        img_data = base64.b64decode(base64_image)
-        
-        # Open the image data using the Pillow library
-        img = Image.open(io.BytesIO(img_data))
-        
-        # Convert the image to a NumPy array and normalize its values to the 0.0-1.0 range
+    def load_image(self, param_name, image_filename):
+        image_path = folder_paths.get_input_directory() + os.sep + image_filename
+        img = Image.open(image_path)
         image_np = np.array(img).astype(np.float32) / 255.0
-        
-        # Convert the NumPy array to a PyTorch tensor and add a batch dimension
         image_tensor = torch.from_numpy(image_np)[None,]
 
         # Handle images with an alpha channel (transparency) to create a mask
