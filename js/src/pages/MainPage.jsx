@@ -64,7 +64,7 @@ function App() {
   const [progressValue, setProgressValue] = useState(0);
   const [progressMax, setProgressMax] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [uploadedImageBase64, setUploadedImageBase64] = useState(null); // New state for uploaded image
+  
 
   const openModalWithImage = (imageSrc) => {
     setSelectedPreviewImage(imageSrc);
@@ -250,17 +250,7 @@ function App() {
     localStorage.setItem(`${selectedWorkflow}_bypassedState`, JSON.stringify(newBypassedState));
   };
 
-  const handleImageUpload = (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-          setUploadedImageBase64(e.target.result);
-          console.log("Image has been converted to Base64.");
-      };
-      reader.readAsDataURL(file);
-  };
+  
 
   const handleGenerate = async () => {
     if (!workflowData) return;
@@ -410,19 +400,20 @@ function App() {
         }
     }
 
-    // Inject the Base64 string into the CozyGenImageInput node
-    const cozyGenImageInputNode = Object.values(finalWorkflow).find(
+    // Inject Base64 strings into all CozyGenImageInput nodes
+    const imageInputNodesInWorkflow = Object.values(finalWorkflow).filter(
         node => node.class_type === 'CozyGenImageInput'
     );
 
-    if (cozyGenImageInputNode) {
-        if (!uploadedImageBase64) {
-            alert("Please upload an image using the uploader before generating.");
-            setIsLoading(false);
-            return;
+    if (imageInputNodesInWorkflow.length > 0) {
+        for (const node of imageInputNodesInWorkflow) {
+            const param_name = node.inputs.param_name;
+            const base64Image = formData[param_name]; // Get the Base64 string from formData
+
+            // No alert here, as ImageInput component will handle its own validation
+            node.inputs.base64_image = base64Image;
+            console.log(`Injected Base64 image into CozyGenImageInput node "${param_name}" (${node.id})`);
         }
-        cozyGenImageInputNode.inputs.base64_image = uploadedImageBase64;
-        console.log("Injected Base64 image into CozyGenImageInput node:", cozyGenImageInputNode.id);
     } else {
         console.warn("No CozyGenImageInput node found in the workflow. Skipping Base64 injection.");
     }
@@ -574,14 +565,8 @@ function App() {
                 />
                 {hasImageInput && (
                     <div className="bg-base-200 shadow-lg rounded-lg p-4">
-                        <h2 className="text-xl font-semibold text-white mb-4">Upload Image for Workflow</h2>
-                        <input
-                            type="file"
-                            id="imageUploader"
-                            accept="image/png, image/jpeg, image/webp"
-                            onChange={handleImageUpload}
-                            className="file-input file-input-bordered w-full mb-4"
-                        />
+                        <h2 className="text-xl font-semibold text-white mb-4">{dynamicInputs.find(input => input.class_type === 'CozyGenImageInput')?.inputs?.param_name || 'Upload Image for Workflow'}</h2>
+                        
                     </div>
                 )}
                 {/* Render DynamicForm for all CozyGenDynamicInput nodes */}

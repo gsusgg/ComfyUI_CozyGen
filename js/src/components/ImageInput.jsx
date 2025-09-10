@@ -26,7 +26,11 @@ const ImageInput = ({ input, value, onFormChange }) => {
     useEffect(() => {
         // When the component mounts or input changes, set the initial preview URL
         if (input.class_type === 'CozyGenImageInput') {
-            setPreviewUrl(value || ''); // value is now the base64 string directly
+            if (value) { // If value (filename) exists
+                setPreviewUrl(`/view?filename=${value}&subfolder=input&type=input`); // Construct URL from filename
+            } else {
+                setPreviewUrl('');
+            }
         } else if (value?.url) {
             setPreviewUrl(value.url);
         } else if (value?.path && imageSource === 'Gallery') {
@@ -80,6 +84,23 @@ const ImageInput = ({ input, value, onFormChange }) => {
         onFormChange(input.inputs.param_name, { source: 'Upload', path: '', url: '' });
     };
 
+    const handleCozyGenFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setPreviewUrl(URL.createObjectURL(file)); // Local preview immediately
+
+        try {
+            const response = await uploadImage(file); // Upload image to backend
+            const imageUrl = `/view?filename=${response.filename}&subfolder=input&type=input`; // Construct URL
+            setPreviewUrl(imageUrl); // Update preview with actual URL
+            onFormChange(input.inputs.param_name, response.filename); // Store filename in formData
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            setPreviewUrl(''); // Clear preview on error
+        }
+    };
+
     const navigateGallery = (subfolder) => {
         setCurrentGalleryPath(subfolder);
         setSelectedGalleryImage(''); // Clear selection when navigating
@@ -92,9 +113,15 @@ const ImageInput = ({ input, value, onFormChange }) => {
             </label>
 
             {input.class_type === 'CozyGenImageInput' ? (
-                // Simplified UI for CozyGenImageInput
+                // UI for CozyGenImageInput
                 <div className="mb-4">
-                    <p className="text-gray-400">Image will be provided by the main uploader.</p>
+                    <input
+                        type="file"
+                        id={`cozyGenImageUploader-${input.id}`} // Unique ID for each input
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={handleCozyGenFileChange}
+                        className="file-input file-input-bordered w-full mb-4"
+                    />
                     {previewUrl && (
                         <div className="mt-4 flex justify-center">
                             <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />

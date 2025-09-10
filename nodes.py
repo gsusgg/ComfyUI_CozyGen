@@ -83,6 +83,7 @@ class CozyGenImageInput:
         # This input now correctly accepts a STRING, which will be our Base64 data.
         return {
             "required": {
+                "param_name": ("STRING", {"default": "Image Input"}),
                 "base64_image": ("STRING", {"multiline": True, "default": ""}),
             }
         }
@@ -92,7 +93,7 @@ class CozyGenImageInput:
     FUNCTION = "load_image"
     CATEGORY = "CozyGen"
 
-    def load_image(self, base64_image):
+    def load_image(self, param_name, base64_image):
         from io import BytesIO # Temporary workaround for io NameError
         # This function contains the logic for decoding the string and preparing the image tensor.
         
