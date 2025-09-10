@@ -6,7 +6,7 @@
       "cfg": 8,
       "sampler_name": "dpmpp_2m",
       "scheduler": "normal",
-      "denoise": 0.8700000000000001,
+      "denoise": 0.2,
       "model": [
         "14",
         0
@@ -77,7 +77,7 @@
   "12": {
     "inputs": {
       "pixels": [
-        "20",
+        "24",
         0
       ],
       "vae": [
@@ -99,16 +99,6 @@
       "title": "Load Checkpoint"
     }
   },
-  "20": {
-    "inputs": {
-      "param_name": "Image Input 1",
-      "image_base64": ""
-    },
-    "class_type": "CozyGenImageInput",
-    "_meta": {
-      "title": "CozyGen Image Input"
-    }
-  },
   "21": {
     "inputs": {
       "filename_prefix": "CozyGen/output",
@@ -127,12 +117,21 @@
       "param_name": "Prompt",
       "priority": 0,
       "param_type": "STRING",
-      "default_value": "",
-      "Multiline": false
+      "default_value": "a cat",
+      "Multiline": true
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {
       "title": "CozyGen Dynamic Input"
+    }
+  },
+  "24": {
+    "inputs": {
+      "base64_image": ""
+    },
+    "class_type": "CozyGenImageInput",
+    "_meta": {
+      "title": "CozyGen Image Input"
     }
   }
 }

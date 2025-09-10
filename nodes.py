@@ -4,11 +4,8 @@ import torch
 import numpy as np
 from PIL import Image, ImageOps
 from PIL.PngImagePlugin import PngInfo
-<<<<<<< HEAD
 import base64 # New import
-from io import BytesIO # New import
-=======
->>>>>>> 8f2faccdbdbb2288d94b70c6d2ff4bf824b9b551
+import io # New import
 
 import folder_paths
 from nodes import SaveImage
@@ -96,6 +93,7 @@ class CozyGenImageInput:
     CATEGORY = "CozyGen"
 
     def load_image(self, base64_image):
+        from io import BytesIO # Temporary workaround for io NameError
         # This function contains the logic for decoding the string and preparing the image tensor.
         
         # Remove the data URL prefix if it exists (e.g., "data:image/png;base64,")

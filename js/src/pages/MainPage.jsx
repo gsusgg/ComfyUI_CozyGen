@@ -517,6 +517,8 @@ function App() {
     localStorage.removeItem('lastPreviewImage');
   };
 
+  const hasImageInput = dynamicInputs.some(input => input.class_type === 'CozyGenImageInput');
+
   return (
     <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -570,37 +572,37 @@ function App() {
                   selectedWorkflow={selectedWorkflow}
                   onSelect={handleWorkflowSelect}
                 />
-                {/* New Image Upload Section */}
-                <div className="bg-base-200 shadow-lg rounded-lg p-4">
-                    <h2 className="text-xl font-semibold text-white mb-4">Upload Image for Workflow</h2>
-                    <input
-                        type="file"
-                        id="imageUploader"
-                        accept="image/png, image/jpeg, image/webp"
-                        onChange={handleImageUpload}
-                        className="file-input file-input-bordered w-full mb-4"
+                {hasImageInput && (
+                    <div className="bg-base-200 shadow-lg rounded-lg p-4">
+                        <h2 className="text-xl font-semibold text-white mb-4">Upload Image for Workflow</h2>
+                        <input
+                            type="file"
+                            id="imageUploader"
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handleImageUpload}
+                            className="file-input file-input-bordered w-full mb-4"
+                        />
+                    </div>
+                )}
+                {/* Render DynamicForm for all CozyGenDynamicInput nodes */}
+                <DynamicForm
+                    inputs={dynamicInputs.filter(input => input.class_type === 'CozyGenDynamicInput')}
+                    formData={formData}
+                    onFormChange={handleFormChange}
+                    randomizeState={randomizeState}
+                    onRandomizeToggle={handleRandomizeToggle}
+                    bypassedState={bypassedState}
+                    onBypassToggle={handleBypassToggle}
+                />
+
+                {/* Render ImageInput for CozyGenImageInput nodes */}
+                {dynamicInputs.filter(input => input.class_type === 'CozyGenImageInput').map(input => (
+                    <ImageInput
+                        key={input.id}
+                        input={input}
+                        value={formData[input.inputs.param_name]} // Pass the relevant part of formData
+                        onFormChange={handleFormChange}
                     />
-                </div>
-                {dynamicInputs.map(input => (
-                    input.class_type === 'CozyGenDynamicInput' ? (
-                        <DynamicForm 
-                            key={input.id}
-                            inputs={[input]} // Pass as array for DynamicForm
-                            formData={formData}
-                            onFormChange={handleFormChange}
-                            randomizeState={randomizeState}
-                            onRandomizeToggle={handleRandomizeToggle}
-                            bypassedState={bypassedState}
-                            onBypassToggle={handleBypassToggle}
-                        />
-                    ) : input.class_type === 'CozyGenImageInput' ? (
-                        <ImageInput
-                            key={input.id}
-                            input={input}
-                            value={formData[input.inputs.param_name]} // Pass the relevant part of formData
-                            onFormChange={handleFormChange}
-                        />
-                    ) : null
                 ))}
             </div>
         </div>
