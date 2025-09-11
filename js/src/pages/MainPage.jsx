@@ -585,12 +585,7 @@ function App() {
                   selectedWorkflow={selectedWorkflow}
                   onSelect={handleWorkflowSelect}
                 />
-                {hasImageInput && (
-                    <div className="bg-base-200 shadow-lg rounded-lg p-4">
-                        <h2 className="text-xl font-semibold text-white mb-4">{dynamicInputs.find(input => input.class_type === 'CozyGenImageInput')?.inputs?.param_name || 'Upload Image for Workflow'}</h2>
-                        
-                    </div>
-                )}
+
                 {/* Render DynamicForm for all CozyGenDynamicInput nodes */}
                 <DynamicForm
                     inputs={dynamicInputs.filter(input => input.class_type === 'CozyGenDynamicInput')}

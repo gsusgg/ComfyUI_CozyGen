@@ -28,7 +28,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
         // When the component mounts or input changes, set the initial preview URL
         if (input.class_type === 'CozyGenImageInput') {
             if (value) { // If value (filename) exists
-                setPreviewUrl(`/view?filename=${value}&subfolder=input&type=input`); // Construct URL from filename
+                setPreviewUrl(`/view?filename=${value}&type=input`); // Construct URL from filename
             } else {
                 setPreviewUrl('');
             }
@@ -58,7 +58,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
             try {
                 const response = await uploadImage(file);
                 // Update form data with the filename returned from the backend
-                onFormChange(input.inputs.param_name, { source: 'Upload', path: response.filename, url: `/view?filename=${response.filename}&subfolder=input&type=input` });
+                onFormChange(input.inputs.param_name, { source: 'Upload', path: response.filename, url: `/view?filename=${response.filename}&type=input` });
             } catch (error) {
                 console.error("Error uploading image:", error);
                 setPreviewUrl('');
@@ -112,7 +112,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
                         setPreviewUrl(URL.createObjectURL(resizedFile));
                         try {
                             const response = await uploadImage(resizedFile);
-                            const imageUrl = `/view?filename=${response.filename}&subfolder=input&type=input`;
+                            const imageUrl = `/view?filename=${response.filename}&type=input`;
                             setPreviewUrl(imageUrl);
                             onFormChange(input.inputs.param_name, response.filename);
                         } catch (error) {
