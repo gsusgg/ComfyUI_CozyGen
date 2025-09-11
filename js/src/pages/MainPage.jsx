@@ -18,7 +18,7 @@ const customStyles = {
     backgroundColor: '#2D3748', // base-200
     border: 'none',
     borderRadius: '8px',
-    padding: '0.5rem',
+    padding: '0rem',
     maxHeight: '90vh',
     width: '90vw'
   },

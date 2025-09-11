@@ -18,7 +18,7 @@ const customStyles = {
     borderRadius: '8px',
     maxWidth: '90vw',
     maxHeight: '90vh',
-    padding: '0.5rem'
+    padding: '0rem'
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.75)'
@@ -110,44 +110,41 @@ const Gallery = () => {
                     style={customStyles}
                     contentLabel="Image Details"
                 >
-                    <div className="flex flex-col lg:flex-row text-white gap-6">
-                        <div className="flex-shrink-0">
-                            <div className="flex-shrink-0">
-                            <TransformWrapper
-                                initialScale={1}
-                                minScale={0.5}
-                                maxScale={5}
-                                limitToBounds={false}
-                                doubleClick={{ disabled: true }}
-                                wheel={{ activationKeys: ['Control'] }}
-                                className="h-full w-full"
-                            >
-                                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-                                    <>
-                                        <TransformComponent className="h-full w-full flex items-center justify-center">
-                                            <img 
-                                                src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`}
-                                                alt={selectedItem.filename} 
-                                                className="max-w-full lg:max-w-2xl object-contain rounded-lg shadow-2xl"
-                                            />
-                                        </TransformComponent>
-                                        <div className="tools mt-2 flex space-x-2">
-                                            <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
-                                            <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
-                                            <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
-                                        </div>
-                                    </>
-                                )}
-                            </TransformWrapper>
-                        </div>
-                        </div>
-                        <div className="flex-grow min-w-0">
-                            <h2 className="text-2xl font-bold mb-4 break-words">{selectedItem.filename}</h2>
-                            <button onClick={() => setModalIsOpen(false)} className="mt-4 w-full bg-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-accent-focus transition duration-300">
-                                Close
-                            </button>
-                        </div>
+                    <div className="flex flex-col h-full"> {/* Main modal content container */}
+                    {/* Image section - takes available space */}
+                    <div className="flex-grow flex items-center justify-center">
+                        <TransformWrapper
+                            initialScale={1}
+                            minScale={0.5}
+                            maxScale={5}
+                            limitToBounds={false}
+                            doubleClick={{ disabled: true }}
+                            wheel={true}
+                            className="h-full w-full" // Keep these for image scaling within its container
+                        >
+                            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                                <TransformComponent className="h-full w-full flex items-center justify-center">
+                                    <img src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`} alt={selectedItem.filename} className="max-w-full rounded-lg" />
+                                </TransformComponent>
+                            )}
+                        </TransformWrapper>
                     </div>
+
+                    {/* Controls and Close button section - fixed at bottom */}
+                    <div className="flex flex-col items-center mt-4"> {/* Add margin-top for spacing */}
+                        <div className="tools flex space-x-2 mb-2"> {/* Controls */}
+                            <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
+                            <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
+                            <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
+                        </div>
+                        <button
+                            onClick={() => setModalIsOpen(false)}
+                            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
                 </Modal>
             )}
         </div>
