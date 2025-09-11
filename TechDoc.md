@@ -53,7 +53,7 @@ This JavaScript file integrates with the ComfyUI editor to enhance the `CozyGenD
 This Python file defines the HTTP API endpoints that the CozyGen web frontend interacts with. It uses `aiohttp` for handling web requests.
 
 *   **`/cozygen/hello` (GET)**: A simple endpoint for testing API connectivity.
-*   **`/cozygen/gallery` (GET)**: Retrieves a list of image files and directories from the ComfyUI output folder. It includes functionality to extract prompt and seed metadata from PNG files.
+*   **`/cozygen/gallery` (GET)**: Retrieves a list of image files and directories from the ComfyUI output folder. It no longer extracts or includes prompt and seed metadata from PNG files.
 *   **`/cozygen/upload_image` (POST)**: Handles the upload of image files from the frontend.
     *   **Purpose**: Allows users to upload images directly to the ComfyUI input directory for use in workflows.
     *   **Inputs**: Expects a multipart form data request with a field named `image` containing the image file.

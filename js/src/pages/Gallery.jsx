@@ -143,32 +143,6 @@ const Gallery = () => {
                         </div>
                         <div className="flex-grow min-w-0">
                             <h2 className="text-2xl font-bold mb-4 break-words">{selectedItem.filename}</h2>
-                            {selectedItem.metadata && (
-                                <div className="bg-base-100 p-3 rounded-lg text-sm overflow-x-auto max-h-[70vh]">
-                                    {selectedItem.metadata.prompt && (
-                                        <div className="mb-2">
-                                            <h3 className="font-semibold text-gray-400">Prompt:</h3>
-                                            <p className="text-white whitespace-pre-wrap break-words">{selectedItem.metadata.prompt}</p>
-                                        </div>
-                                    )}
-                                    {selectedItem.metadata.seed !== undefined && (
-                                        <div className="mb-2">
-                                            <h3 className="font-semibold text-gray-400">Seed:</h3>
-                                            <p className="text-white">{selectedItem.metadata.seed}</p>
-                                        </div>
-                                    )}
-                                    {selectedItem.metadata.full_workflow && (
-                                        <div className="mt-4">
-                                            <button 
-                                                onClick={() => navigator.clipboard.writeText(JSON.stringify(selectedItem.metadata.full_workflow, null, 2))}
-                                                className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                                            >
-                                                Copy Workflow to Clipboard
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                             <button onClick={() => setModalIsOpen(false)} className="mt-4 w-full bg-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-accent-focus transition duration-300">
                                 Close
                             </button>

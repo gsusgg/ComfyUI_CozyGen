@@ -6,7 +6,10 @@
       "cfg": 8,
       "sampler_name": "dpmpp_2m",
       "scheduler": "normal",
-      "denoise": 0.2,
+      "denoise": [
+        "26",
+        0
+      ],
       "model": [
         "14",
         0
@@ -127,11 +130,27 @@
   },
   "24": {
     "inputs": {
-      "base64_image": ""
+      "param_name": "Image Input",
+      "image_filename": ""
     },
     "class_type": "CozyGenImageInput",
     "_meta": {
       "title": "CozyGen Image Input"
+    }
+  },
+  "26": {
+    "inputs": {
+      "param_name": "denoise",
+      "priority": 1,
+      "param_type": "FLOAT",
+      "default_value": 0.65,
+      "min_value": 0,
+      "max_value": 1,
+      "increment": 0.1
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
     }
   }
 }
