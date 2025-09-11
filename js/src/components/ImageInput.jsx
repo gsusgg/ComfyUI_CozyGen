@@ -150,24 +150,27 @@ const ImageInput = ({ input, value, onFormChange }) => {
             </label>
 
             {input.class_type === 'CozyGenImageInput' ? (
-                // UI for CozyGenImageInput
-                <div className="mb-4">
-                    <input
-                        type="file"
-                        id={`cozyGenImageUploader-${input.id}`} // Unique ID for each input
-                        accept="image/png, image/jpeg, image/webp"
-                        onChange={handleCozyGenFileChange}
-                        className="file-input file-input-bordered w-full mb-4"
-                    />
-                    <div class="form-control">
-                        <label class="label cursor-pointer">
-                            <span class="label-text">Smart Resize</span> 
-                            <input type="checkbox" class="toggle" checked={smartResize} onChange={() => setSmartResize(!smartResize)} />
-                        </label>
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                    {/* Left Column: File Input and Smart Resize */}
+                    <div className="flex-grow w-full sm:w-auto">
+                        <input
+                            type="file"
+                            id={`cozyGenImageUploader-${input.id}`} // Unique ID for each input
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handleCozyGenFileChange}
+                            className="file-input file-input-bordered w-full mb-2"
+                        />
+                        <div class="form-control">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Smart Resize</span> 
+                                <input type="checkbox" class="toggle" checked={smartResize} onChange={() => setSmartResize(!smartResize)} />
+                            </label>
+                        </div>
                     </div>
+                    {/* Right Column: Image Preview Thumbnail */}
                     {previewUrl && (
-                        <div className="mt-4 flex justify-center">
-                            <img src={previewUrl} alt="Image Preview" className="max-w-full h-auto rounded-lg shadow-md" style={{ maxHeight: '300px' }} />
+                        <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden shadow-md border border-base-300 flex items-center justify-center bg-base-300">
+                            <img src={previewUrl} alt="Image Preview" className="w-full h-full object-cover" />
                         </div>
                     )}
                 </div>
