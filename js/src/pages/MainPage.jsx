@@ -187,7 +187,12 @@ function App() {
                         input.inputs.choices = choicesData.choices || [];
                     } catch (error) {
                         console.error(`Error fetching choices for ${param_name} (choiceType: ${choiceType}):`, error);
-                        input.inputs.choices = []; // Set to empty array on error
+                        input.inputs.choices = [];
+                    }
+                } else {
+                    // If no choiceType, and no choices are hardcoded in the workflow, default to an empty array
+                    if (!input.inputs.choices) {
+                        input.inputs.choices = [];
                     }
                 }
             }
