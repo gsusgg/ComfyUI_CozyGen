@@ -13,13 +13,13 @@ Known Issues:
 Changelog:
 *  9/11/2025 - Update 1
 	*NOTE* This update will require you to remake workflows if you already had some. If you run into weird issues, try a complete reinstall if you are upgrading.
-		- Added image 2 image support with the "Cozy Gen Image Input" Node
-		- Added more robust support for dropdown choices, with option to specify model subfolder with "choice_type" option.
-		- Improved gallery view and image overlay modals, with zoom/pinch and pan controls.
-		- Added gallery pagination to reduce load of large gallery folders.
-		- Added bypass option to dropdown connections. This is mainly intended for loras so you can add multiple to the workflow, but choose which to use from the front end.
-		- General improvements (Layout, background functions, etc.)
-		- The other stuff that I forgot about but is in here.
+		* Added image 2 image support with the "Cozy Gen Image Input" Node
+		* Added more robust support for dropdown choices, with option to specify model subfolder with "choice_type" option.
+		* Improved gallery view and image overlay modals, with zoom/pinch and pan controls.
+		* Added gallery pagination to reduce load of large gallery folders.
+		* Added bypass option to dropdown connections. This is mainly intended for loras so you can add multiple to the workflow, but choose which to use from the front end.
+		* General improvements (Layout, background functions, etc.)
+		* The other stuff that I forgot about but is in here.
 		
 *  8/29/2025 - Initial release
 
