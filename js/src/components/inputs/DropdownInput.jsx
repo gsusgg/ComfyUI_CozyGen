@@ -8,7 +8,7 @@ const DropdownInput = ({ value, onChange, choices }) => {
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
       >
-        {choices.map((choice) => (
+        {Array.isArray(choices) && choices.map((choice) => (
           <option key={choice} value={choice}>
             {choice}
           </option>
