@@ -40,23 +40,34 @@ const Gallery = () => {
     const [path, setPath] = useState(localStorage.getItem('galleryPath') || '');
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchGallery = async () => {
             try {
-                const galleryItems = await getGallery(path);
-                setItems(galleryItems);
+                const galleryData = await getGallery(path, page);
+                if (galleryData && galleryData.items) {
+                    setItems(galleryData.items);
+                    setTotalPages(galleryData.total_pages);
+                } else {
+                    setItems([]);
+                    setTotalPages(1);
+                }
             } catch (error) {
                 console.error(error);
+                setItems([]);
+                setTotalPages(1);
             }
         };
         fetchGallery();
         localStorage.setItem('galleryPath', path);
-    }, [path]);
+    }, [path, page]);
 
     const handleSelect = (item) => {
         if (item.type === 'directory') {
             setPath(item.subfolder);
+            setPage(1);
         } else {
             setSelectedItem(item);
             setModalIsOpen(true);
@@ -68,6 +79,7 @@ const Gallery = () => {
         const pathSegments = normalizedPath.split('/').filter(Boolean);
         const newPath = pathSegments.slice(0, index).join('/');
         setPath(newPath);
+        setPage(1);
     };
 
     const handleFolderUp = () => {
@@ -79,6 +91,23 @@ const Gallery = () => {
         } else {
             setPath(''); // Already at root, ensure path is empty
         }
+        setPage(1);
+    };
+
+    const handleNext = () => {
+        const images = items.filter(item => item.type !== 'directory');
+        if (images.length <= 1) return;
+        const currentIndex = images.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
+        const nextIndex = (currentIndex + 1) % images.length;
+        setSelectedItem(images[nextIndex]);
+    };
+
+    const handlePrevious = () => {
+        const images = items.filter(item => item.type !== 'directory');
+        if (images.length <= 1) return;
+        const currentIndex = images.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
+        const prevIndex = (currentIndex - 1 + images.length) % images.length;
+        setSelectedItem(images[prevIndex]);
     };
 
     const breadcrumbs = path.split(/[\/]/).filter(Boolean); // Handle both windows and unix paths
@@ -86,7 +115,7 @@ const Gallery = () => {
     return (
         <div className="p-4">
             <div className="mb-4 bg-base-200 rounded-lg p-2 flex items-center text-lg">
-                <span onClick={() => setPath('')} className="cursor-pointer hover:text-accent transition-colors">Gallery</span>
+                <span onClick={() => { setPath(''); setPage(1); }} className="cursor-pointer hover:text-accent transition-colors">Gallery</span>
                 {breadcrumbs.map((segment, index) => (
                     <React.Fragment key={index}>
                         <span className="mx-2 text-gray-500">/</span>
@@ -111,6 +140,26 @@ const Gallery = () => {
                 ))}
             </div>
 
+            <div className="flex justify-center items-center space-x-4 mt-4">
+                <button
+                    onClick={() => setPage(page > 1 ? page - 1 : 1)}
+                    disabled={page <= 1}
+                    className="px-4 py-2 bg-base-300 text-white rounded-md disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <span>
+                    Page {page} of {totalPages}
+                </span>
+                <button
+                    onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+                    disabled={page >= totalPages}
+                    className="px-4 py-2 bg-base-300 text-white rounded-md disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+
             {selectedItem && (
                 <Modal
                     isOpen={modalIsOpen}
@@ -133,12 +182,28 @@ const Gallery = () => {
                                 </TransformComponent>
                             </TransformWrapper>
                         </div>
-                        <div className="flex-shrink-0 p-2 flex justify-center">
+                        <div className="flex-shrink-0 p-2 flex justify-center items-center space-x-4">
+                            <button
+                                onClick={handlePrevious}
+                                className="p-2 bg-base-300 text-gray-300 rounded-full hover:bg-base-300/70 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                </svg>
+                            </button>
                             <button
                                 onClick={() => setModalIsOpen(false)}
                                 className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"
                             >
                                 Close
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                className="p-2 bg-base-300 text-gray-300 rounded-full hover:bg-base-300/70 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                </svg>
                             </button>
                         </div>
                     </div>

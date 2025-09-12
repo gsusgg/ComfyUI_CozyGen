@@ -16,10 +16,15 @@ async def get_hello(request: web.Request) -> web.Response:
 
 async def get_gallery_files(request: web.Request) -> web.Response:
     subfolder = request.rel_url.query.get('subfolder', '')
+    try:
+        page = int(request.rel_url.query.get('page', '1'))
+        per_page = int(request.rel_url.query.get('per_page', '20'))
+    except ValueError:
+        return web.json_response({"error": "Invalid page or per_page parameter"}, status=400)
+
     output_directory = folder_paths.get_output_directory()
 
     # Security: Prevent directory traversal
-    # Normalize the path and ensure it's within the output directory
     gallery_path = os.path.normpath(os.path.join(output_directory, subfolder))
     if not gallery_path.startswith(output_directory):
         return web.json_response({"error": "Unauthorized path"}, status=403)
@@ -52,12 +57,25 @@ async def get_gallery_files(request: web.Request) -> web.Response:
     # Sort items: directories first, then by modification time
     gallery_items.sort(key=lambda x: (x['type'] != 'directory', x.get('mod_time', 0)), reverse=True)
 
+    # Pagination
+    total_items = len(gallery_items)
+    total_pages = (total_items + per_page - 1) // per_page
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+    paginated_items = gallery_items[start_index:end_index]
+
     # Remove mod_time before sending
-    for item in gallery_items:
+    for item in paginated_items:
         if 'mod_time' in item:
             del item['mod_time']
 
-    return web.json_response(gallery_items)
+    return web.json_response({
+        "items": paginated_items,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "total_items": total_items
+    })
 
 async def upload_image(request: web.Request) -> web.Response:
     reader = await request.multipart()
