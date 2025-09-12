@@ -1,6 +1,41 @@
 import { app } from "/scripts/app.js";
 
 (function () {
+    // Mapping of ComfyUI node types and their input names to CozyGen choice_type strings
+    const nodeCategoryMap = {
+        "CheckpointLoaderSimple": { "ckpt_name": "checkpoints" },
+        "VAELoader": { "vae_name": "vae" },
+        "LoraLoader": { "lora_name": "loras" },
+        "LoraSelect": { // Assuming LoraSelect node has inputs like lora_01, lora_02 etc.
+            "lora_01": "loras",
+            "lora_02": "loras",
+            "lora_03": "loras",
+            "lora_04": "loras",
+            "lora_05": "loras",
+            "lora_06": "loras",
+            "lora_07": "loras",
+            "lora_08": "loras",
+            "lora_09": "loras",
+            "lora_10": "loras",
+            "lora_11": "loras",
+            "lora_12": "loras",
+            "lora_13": "loras",
+            "lora_14": "loras",
+            "lora_15": "loras",
+            "lora_16": "loras",
+            "lora_17": "loras",
+            "lora_18": "loras",
+            "lora_19": "loras",
+            "lora_20": "loras",
+        },
+        "ClipLoader": { "clip_name": "clip" },
+        "UNETLoader": { "unet_name": "unet" },
+        "SamplerCustom": { "sampler_name": "sampler" },
+        "KSampler": { "sampler_name": "samplers_list", "scheduler": "schedulers_list" },
+        "Scheduler": { "scheduler_name": "scheduler" },
+        // Add more mappings as needed for other common loaders
+    };
+
     // Helper function to determine if a value matches a given type
     function valueMatchesType(value, type, options) {
         if (type === "number" || type === "number (integer)") {
@@ -14,7 +49,7 @@ import { app } from "/scripts/app.js";
     }
 
     // Function to change the widgets on the CozyGenDynamicInput node
-    function changeCozyGenWidgets(node, connectedInputType, connectedInputProps, connectedWidget) {
+    function changeCozyGenWidgets(node, connectedInputType, connectedInputProps, connectedWidget, targetNodeType, targetInputName) {
         let paramType = "STRING";
         let defaultValue = "";
         let min = 0.0;
@@ -79,6 +114,24 @@ import { app } from "/scripts/app.js";
         let defaultWidget;
         if (paramType === "DROPDOWN") {
             defaultWidget = node.addWidget("combo", "default_value", defaultValue, function(v) { node.properties["default_value"] = v; }, { values: choices });
+            
+            let inferredChoiceType = "";
+            if (targetNodeType && targetInputName && nodeCategoryMap[targetNodeType] && nodeCategoryMap[targetNodeType][targetInputName]) {
+                inferredChoiceType = nodeCategoryMap[targetNodeType][targetInputName];
+            }
+
+            let choiceTypeWidget = node.addWidget("text", "choice_type", node.properties["choice_type"] || inferredChoiceType, function(v) { node.properties["choice_type"] = v; });
+            
+            // If an inferred type is found and the property is currently empty, set it
+            if (inferredChoiceType && !node.properties["choice_type"]) {
+                node.properties["choice_type"] = inferredChoiceType;
+                choiceTypeWidget.value = inferredChoiceType; // Update widget value directly
+            }
+
+            // Add the display_bypass toggle for dropdowns
+            let displayBypassToggle = node.addWidget("toggle", "display_bypass", node.properties["display_bypass"], function(v) { node.properties["display_bypass"] = v; });
+            node.properties["display_bypass"] = displayBypassToggle.value;
+
         } else if (paramType === "INT") {
             defaultWidget = node.addWidget("number", "default_value", defaultValue, function(v) { node.properties["default_value"] = v; }, { precision: 0, min: min, max: max, step: increment });
         } else if (paramType === "FLOAT") {
@@ -130,7 +183,7 @@ import { app } from "/scripts/app.js";
             choicesInput.value = choices.join(",");
         } else {
             console.warn("CozyGen: 'choices' input object not found. This is unexpected.");
-            node.properties["choices"] = choices.join(","); // Fallback, though this is not persisting
+            node.properties["choices"] = JSON.stringify(choices); // Fallback
         }
 
         // Update node size to fit new widgets
@@ -168,7 +221,7 @@ import { app } from "/scripts/app.js";
                 node.widgets[0].value = input.name || "Dynamic Parameter";
             }
 
-            changeCozyGenWidgets(node, connectedInputType, connectedInputProps, connectedWidget);
+            changeCozyGenWidgets(node, connectedInputType, connectedInputProps, connectedWidget, theirNode.type, input.name);
 
         } else {
             // No connection or multiple connections, revert to default state
@@ -193,6 +246,7 @@ import { app } from "/scripts/app.js";
             node.properties["increment"] = 0.0;
             node.properties["multiline"] = false;
             node.properties["choices"] = "";
+            node.properties["choice_type"] = "";
             
             node.setDirtyCanvas(true);
         }

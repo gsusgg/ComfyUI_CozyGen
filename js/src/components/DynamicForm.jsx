@@ -4,26 +4,30 @@ import NumberInput from './inputs/NumberInput';
 import BooleanInput from './inputs/BooleanInput';
 import DropdownInput from './inputs/DropdownInput';
 
-const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeToggle) => {
-    console.log("Rendering input:", input); // DEBUGGING
+const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle) => {
+    
     const { id, inputs } = input;
     const param_name = inputs['param_name'];
     const param_type = inputs['param_type'];
     const defaultValue = inputs['default_value'];
     const value = formData[param_name] !== undefined ? formData[param_name] : defaultValue;
+    const displayBypass = inputs['display_bypass']; // Get the display_bypass property
+    const isBypassed = bypassedState[param_name] || false; // Get current bypass state
+
+    let inputComponent;
 
     switch (param_type) {
         case 'STRING':
-            return <StringInput 
-                        label={param_name} 
+            inputComponent = <StringInput 
                         value={value} 
                         onChange={(val) => onFormChange(param_name, val)} 
                         multiline={inputs['Multiline']}
                     />;
+            break;
         case 'INT':
         case 'FLOAT':
-            return <NumberInput
-                        label={param_name}
+            inputComponent = <NumberInput
+                        inputName={param_name}
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
                         onRandomizeToggle={inputs['add_randomize_toggle'] ? (isRandom) => onRandomizeToggle(param_name, isRandom) : null}
@@ -31,26 +35,61 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         min={inputs['min_value']}
                         max={inputs['max_value']}
                         step={inputs['step']}
+                        paramType={param_type}
                     />;
+            break;
         case 'BOOLEAN':
-            return <BooleanInput
-                        label={param_name}
+            inputComponent = <BooleanInput
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
                     />;
+            break;
         case 'DROPDOWN':
-            return <DropdownInput
-                        label={param_name}
+            inputComponent = <DropdownInput
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
                         choices={inputs['choices']}
                     />;
+            break;
         default:
-            return <p>Unsupported input type: {param_type}</p>;
+            inputComponent = <p>Unsupported input type: {param_type}</p>;
     }
-}
 
-const DynamicForm = ({ inputs, formData, onFormChange, randomizeState, onRandomizeToggle }) => {
+    return (
+        <div className="flex flex-col"> {/* Use flex-col to stack label/bypass and input */}
+            <div className="flex justify-between items-center mb-1"> {/* Flex for label and bypass toggle */}
+                <label className="block text-sm font-medium text-gray-300">
+                    {param_name}
+                    {inputs['add_randomize_toggle'] && (
+                        <span className="ml-2 text-xs text-gray-400">
+                            (Randomize
+                            <input
+                                type="checkbox"
+                                className="toggle toggle-sm toggle-accent ml-1"
+                                checked={randomizeState[param_name] || false}
+                                onChange={(e) => onRandomizeToggle(param_name, e.target.checked)}
+                            />)
+                        </span>
+                    )}
+                    {displayBypass && (
+                        <span className="ml-2 text-xs text-gray-400">
+                            (Bypass
+                            <input
+                                type="checkbox"
+                                className="toggle toggle-sm toggle-accent ml-1"
+                                checked={isBypassed}
+                                onChange={(e) => onBypassToggle(param_name, e.target.checked)}
+                            />)
+                        </span>
+                    )}
+                </label>
+            </div>
+            {inputComponent}
+        </div>
+    );
+};
+
+const DynamicForm = ({ inputs, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle }) => {
   if (!inputs || inputs.length === 0) {
     return (
         <div className="bg-base-200 shadow-lg rounded-lg p-4 text-center">
@@ -61,10 +100,10 @@ const DynamicForm = ({ inputs, formData, onFormChange, randomizeState, onRandomi
 
   return (
     <div className="bg-base-200 shadow-lg rounded-lg p-4">
-      <h2 className="text-lg font-semibold text-white mb-4">Controls</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
+      <h2 className="text-lg font-semibold text-white mb-2">Controls</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
         {inputs.map(input => (
-            <div key={input.id} className={input.inputs['Multiline'] ? 'sm:col-span-2' : ''}>{renderInput(input, formData, onFormChange, randomizeState, onRandomizeToggle)}</div>
+            <div key={input.id} className={input.inputs['Multiline'] ? 'sm:col-span-2' : ''}>{renderInput(input, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle)}</div>
         ))}
       </div>
     </div>

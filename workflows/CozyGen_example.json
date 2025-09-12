@@ -47,7 +47,7 @@
       "scheduler": "simple",
       "denoise": 1,
       "model": [
-        "38",
+        "59",
         0
       ],
       "positive": [
@@ -83,7 +83,10 @@
   },
   "39": {
     "inputs": {
-      "vae_name": "ae.safetensors"
+      "vae_name": [
+        "61",
+        0
+      ]
     },
     "class_type": "VAELoader",
     "_meta": {
@@ -121,8 +124,8 @@
         0
       ],
       "clip": [
-        "40",
-        0
+        "59",
+        1
       ]
     },
     "class_type": "CLIPTextEncode",
@@ -133,9 +136,10 @@
   "52": {
     "inputs": {
       "param_name": "unet_name",
-      "priority": 0,
+      "priority": 4,
       "param_type": "DROPDOWN",
-      "default_value": "flux1-krea-dev_fp8_scaled.safetensors"
+      "default_value": "flux1-krea-dev_fp8_scaled.safetensors",
+      "choice_type": "unet"
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {
@@ -223,6 +227,55 @@
       "param_type": "STRING",
       "default_value": "Highly realistic portrait of a Nordic woman with blonde hair and blue eyes, very few freckles on her face, gaze sharp and intellectual. The lighting should reflect the unique coolness of Northern Europe. Outfit is minimalist and modern, background is blurred in cool tones. Needs to perfectly capture the characteristics of a Scandinavian woman. solo, Centered composition",
       "Multiline": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "59": {
+    "inputs": {
+      "lora_name": [
+        "60",
+        0
+      ],
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "38",
+        0
+      ],
+      "clip": [
+        "40",
+        0
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "60": {
+    "inputs": {
+      "param_name": "lora_name",
+      "priority": 2,
+      "param_type": "DROPDOWN",
+      "default_value": "Flux\\8stepTurbo.safetensors",
+      "choice_type": "loras",
+      "display_bypass": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "61": {
+    "inputs": {
+      "param_name": "vae_name",
+      "priority": 4,
+      "param_type": "DROPDOWN",
+      "default_value": "FLUX1\\ae.safetensors",
+      "choice_type": "vae"
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {
