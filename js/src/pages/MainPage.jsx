@@ -9,19 +9,29 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 // Modal styles (copied from Gallery.jsx for consistency)
 const customStyles = {
   content: {
-    top: '50%',
-    left: '50%',
+    position: 'relative',
+    top: 'auto',
+    left: 'auto',
     right: 'auto',
     bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: '#2D3748', // base-200
+    transform: 'none',
+    marginRight: '0',
+    backgroundColor: '#2D3748',
     border: 'none',
     borderRadius: '8px',
-    padding: '0rem'
+    padding: '0rem',
+    maxHeight: '90vh',
+    width: '90vw',
+    maxWidth: '864px',
+    overflow: 'auto',
+    flexShrink: 0,
   },
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.75)'
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
   }
 };
 
@@ -615,9 +625,8 @@ function App() {
                 style={customStyles}
                 contentLabel="Image Preview"
             >
-                <div className="flex flex-col h-full"> {/* Main modal content container */}
-                    {/* Image section - takes available space */}
-                    <div className="flex-grow flex items-center justify-center">
+                <div className="flex flex-col h-full w-full">
+                    <div className="flex-grow flex items-center justify-center min-h-0">
                         <TransformWrapper
                             initialScale={1}
                             minScale={0.5}
@@ -625,23 +634,13 @@ function App() {
                             limitToBounds={false}
                             doubleClick={{ disabled: true }}
                             wheel={true}
-                            className="h-full w-full" // Reverted to w-full
                         >
-                            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-                                <TransformComponent className="h-full w-full flex items-center justify-center">
-                                    <img src={selectedPreviewImage} alt="Generated preview" className="w-full h-full object-contain rounded-lg" />
-                                </TransformComponent>
-                            )}
+                            <TransformComponent>
+                                <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full max-h-full object-contain rounded-lg" />
+                            </TransformComponent>
                         </TransformWrapper>
                     </div>
-
-                    {/* Controls and Close button section - fixed at bottom */}
-                    <div className="flex flex-col items-center mt-4"> {/* Add margin-top for spacing */}
-                        <div className="tools flex space-x-2 mb-2"> {/* Controls */}
-                            <button onClick={() => zoomIn()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">+</button>
-                            <button onClick={() => zoomOut()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">-</button>
-                            <button onClick={() => resetTransform()} className="px-3 py-1 bg-base-300 text-gray-300 rounded-md text-sm hover:bg-base-300/70 transition-colors">Reset</button>
-                        </div>
+                    <div className="flex-shrink-0 p-2 flex justify-center">
                         <button
                             onClick={() => setModalIsOpen(false)}
                             className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-focus transition-colors"
