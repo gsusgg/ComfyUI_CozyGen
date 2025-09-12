@@ -6,10 +6,10 @@ __pycache__/
 *.pyc
 
 # Generated files and logs
-
+*.png
 *.log
 logs
-
+TechDoc.md
 # Gemini related files
 GEMINI.md
 

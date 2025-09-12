@@ -1,14 +1,26 @@
 {
   "3": {
     "inputs": {
-      "seed": 174630339563460,
+      "seed": [
+        "33",
+        0
+      ],
       "steps": [
         "27",
         0
       ],
-      "cfg": 8,
-      "sampler_name": "dpmpp_2m",
-      "scheduler": "normal",
+      "cfg": [
+        "30",
+        0
+      ],
+      "sampler_name": [
+        "31",
+        0
+      ],
+      "scheduler": [
+        "32",
+        0
+      ],
       "denoise": [
         "26",
         0
@@ -53,7 +65,10 @@
   },
   "7": {
     "inputs": {
-      "text": "watermark, text\n",
+      "text": [
+        "29",
+        0
+      ],
       "clip": [
         "14",
         1
@@ -98,7 +113,10 @@
   },
   "14": {
     "inputs": {
-      "ckpt_name": "SDXL\\juggernautXL_ragnarokBy.safetensors"
+      "ckpt_name": [
+        "28",
+        0
+      ]
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -123,7 +141,7 @@
       "param_name": "Prompt",
       "priority": 0,
       "param_type": "STRING",
-      "default_value": "a cat",
+      "default_value": "",
       "Multiline": true
     },
     "class_type": "CozyGenDynamicInput",
@@ -143,8 +161,8 @@
   },
   "26": {
     "inputs": {
-      "param_name": "denoise",
-      "priority": 1,
+      "param_name": "Denoise",
+      "priority": 2,
       "param_type": "FLOAT",
       "default_value": 0.65,
       "min_value": 0,
@@ -158,13 +176,96 @@
   },
   "27": {
     "inputs": {
-      "param_name": "steps",
-      "priority": 1,
+      "param_name": "Steps",
+      "priority": 2,
       "param_type": "INT",
       "default_value": 20,
       "min_value": 1,
       "max_value": 10000,
-      "increment": 10
+      "increment": 1
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "28": {
+    "inputs": {
+      "param_name": "ckpt_name",
+      "priority": 4,
+      "param_type": "DROPDOWN",
+      "default_value": "SDXL\\juggernautXL_ragnarokBy.safetensors",
+      "choice_type": "checkpoints"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "29": {
+    "inputs": {
+      "param_name": "Negative Prompt",
+      "priority": 1,
+      "param_type": "STRING",
+      "default_value": "watermark, text",
+      "Multiline": false
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "30": {
+    "inputs": {
+      "param_name": "Cfg",
+      "priority": 3,
+      "param_type": "FLOAT",
+      "default_value": 7,
+      "min_value": 0,
+      "max_value": 100,
+      "increment": 0.5
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "31": {
+    "inputs": {
+      "param_name": "Sampler",
+      "priority": 3,
+      "param_type": "DROPDOWN",
+      "default_value": "euler",
+      "choice_type": "samplers_list"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "32": {
+    "inputs": {
+      "param_name": "Scheduler",
+      "priority": 3,
+      "param_type": "DROPDOWN",
+      "default_value": "normal",
+      "choice_type": "schedulers_list"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "33": {
+    "inputs": {
+      "param_name": "Seed",
+      "priority": 2,
+      "param_type": "INT",
+      "default_value": 1234,
+      "min_value": 0,
+      "max_value": 18446744073709552000,
+      "increment": 10,
+      "add_randomize_toggle": true
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {

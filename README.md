@@ -9,9 +9,18 @@ This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but 
 Known Issues:
 
 *  If you use a batch higher than 1 they will generate and show in the gallery, but the preview only displays the first image of the batch.
-*  Currently only t2i workflows work. I plan to add i2i, t2v, i2v, and other types, but no promises (this is a hobby project).
 
 Changelog:
+*  9/11/2025 - Update 1
+	*NOTE* This update will require you to remake workflows if you already had some. If you run into weird issues, try a complete reinstall if you are upgrading.
+		- Added image 2 image support with the "Cozy Gen Image Input" Node
+		- Added more robust support for dropdown choices, with option to specify model subfolder with "choice_type" option.
+		- Improved gallery view and image overlay modals, with zoom/pinch and pan controls.
+		- Added gallery pagination to reduce load of large gallery folders.
+		- Added bypass option to dropdown connections. This is mainly intended for loras so you can add multiple to the workflow, but choose which to use from the front end.
+		- General improvements (Layout, background functions, etc.)
+		- The other stuff that I forgot about but is in here.
+		
 *  8/29/2025 - Initial release
 
 ## ✨ Overview
@@ -33,13 +42,13 @@ CozyGen is a custom node for ComfyUI that provides a sleek, mobile-friendly web 
 Mobile-first design:
 
 <p align="center">
-  <img width="744" height="1267" alt="Image" src="https://github.com/user-attachments/assets/6f121edd-5cc0-4b25-b173-2cbc97761bec" />
+  <img width="744" height="1267" alt="Image" src="https://github.com/user-attachments/assets/d0d48c31-780f-4962-a2ce-9fae0ca40bf6" />
 </p>
 
 Adapts to browser size:
 
 <p align="center">
-  <img width="1514" height="865" alt="Image" src="https://github.com/user-attachments/assets/c656b73b-8773-4e5f-af9a-83249701f384" />
+  <img width="1514" height="865" alt="Image" src="https://github.com/user-attachments/assets/77523bda-e45f-4d95-a7e1-c844bb4eb14f" />
 </p>
 
 Custom Node adapts to the string/int/float/dropdown they are connected to:
@@ -96,6 +105,8 @@ In ComfyUI, create or open a workflow that you want to control remotely. For eac
 *   Configure the `CozyGenDynamicInput` node's properties (e.g., `param_name`, `param_type`, `default_value`, `min_value`, `max_value`, `add_randomize_toggle`).
 *   Add a `CozyGenOutput` node at the end of your workflow to save the generated image and send real-time previews to the web UI.
 *   *IMPORTANT* When exporting your workflow, export with API into the `ComfyUI_CozyGen/workflows/` directory.
+
+*   Some dropdown menus may not automatically populate if the model folder is not a default. Use the choice_type widget to point to the correct models subfolder using its name (ex: loras)
 
 ### 2. Access the Web UI
 

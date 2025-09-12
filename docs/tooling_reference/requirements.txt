@@ -1,2 +1,0 @@
-# Optional, only required for Translate node:
-argostranslate
