@@ -18,9 +18,7 @@ const customStyles = {
     backgroundColor: '#2D3748', // base-200
     border: 'none',
     borderRadius: '8px',
-    padding: '0rem',
-    maxHeight: '90vh',
-    width: '90vw'
+    padding: '0rem'
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.75)'
@@ -627,11 +625,11 @@ function App() {
                             limitToBounds={false}
                             doubleClick={{ disabled: true }}
                             wheel={true}
-                            className="h-full w-full" // Keep these for image scaling within its container
+                            className="h-full w-full" // Reverted to w-full
                         >
                             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
                                 <TransformComponent className="h-full w-full flex items-center justify-center">
-                                    <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full rounded-lg" />
+                                    <img src={selectedPreviewImage} alt="Generated preview" className="w-full h-full object-contain rounded-lg" />
                                 </TransformComponent>
                             )}
                         </TransformWrapper>

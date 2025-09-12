@@ -2,7 +2,10 @@
   "3": {
     "inputs": {
       "seed": 174630339563460,
-      "steps": 20,
+      "steps": [
+        "27",
+        0
+      ],
       "cfg": 8,
       "sampler_name": "dpmpp_2m",
       "scheduler": "normal",
@@ -147,6 +150,21 @@
       "min_value": 0,
       "max_value": 1,
       "increment": 0.1
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "27": {
+    "inputs": {
+      "param_name": "steps",
+      "priority": 1,
+      "param_type": "INT",
+      "default_value": 20,
+      "min_value": 1,
+      "max_value": 10000,
+      "increment": 10
     },
     "class_type": "CozyGenDynamicInput",
     "_meta": {

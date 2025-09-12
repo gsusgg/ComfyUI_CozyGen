@@ -16,8 +16,6 @@ const customStyles = {
     backgroundColor: '#2D3748', // gray-800
     border: 'none',
     borderRadius: '8px',
-    maxWidth: '90vw',
-    maxHeight: '90vh',
     padding: '0rem'
   },
   overlay: {
@@ -120,11 +118,11 @@ const Gallery = () => {
                             limitToBounds={false}
                             doubleClick={{ disabled: true }}
                             wheel={true}
-                            className="h-full w-full" // Keep these for image scaling within its container
+                            className="h-full w-full" // Reverted to w-full
                         >
                             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
-                                <TransformComponent className="h-full w-full flex items-center justify-center">
-                                    <img src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`} alt={selectedItem.filename} className="max-w-full rounded-lg" />
+                                <TransformComponent className="h-full w-full flex items-center justify-center"> {/* Reverted to w-full */}
+                                    <img src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`} alt={selectedItem.filename} className="w-full h-full object-contain rounded-lg" />
                                 </TransformComponent>
                             )}
                         </TransformWrapper>

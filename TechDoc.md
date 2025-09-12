@@ -28,6 +28,8 @@ When the end-user interacts with the web UI and triggers a generation, the front
     *   **Outputs**: Has a single wildcard (`*`) output that connects to the actual input of other ComfyUI nodes, passing the value determined by the web UI.
     *   **`get_dynamic_value` Method**: Converts the `default_value` (received as a string from the node properties or the web UI) to the appropriate Python type (int, float, boolean, string) based on `param_type`.
 
+*   **`CozyGenDynamicInput`**: The `increment` (or `step`) value defined in the node is now correctly applied to number inputs (INT and FLOAT) on the web UI. If `increment` is 0 or not specified, it defaults to 1 for INT and 0.1 for FLOAT.
+
 *   **`CozyGenImageInput`**:
     *   **Purpose**: Provides a UI element in the frontend for image selection/upload. The actual image data is injected into the workflow JSON by the frontend.
     *   **Inputs**:

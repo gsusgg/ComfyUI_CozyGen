@@ -35,6 +35,7 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         min={inputs['min_value']}
                         max={inputs['max_value']}
                         step={inputs['step']}
+                        paramType={param_type}
                     />;
             break;
         case 'BOOLEAN':

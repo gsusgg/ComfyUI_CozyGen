@@ -1,11 +1,21 @@
 import React from 'react';
 
-const NumberInput = ({ inputName, value, onChange, min, max, step }) => {
+const NumberInput = ({ inputName, value, onChange, min, max, step, paramType }) => {
 
   const handleValueChange = (e) => {
     const val = e.target.value;
     onChange(val);
   };
+
+  // Determine the effective step value
+  let effectiveStep = step;
+  if (effectiveStep === 0 || effectiveStep === undefined || effectiveStep === null) {
+    if (paramType === 'INT') {
+      effectiveStep = 1;
+    } else if (paramType === 'FLOAT') {
+      effectiveStep = 0.1; // Default step for floats if not specified
+    }
+  }
 
   return (
     <div className="w-full">
@@ -17,7 +27,7 @@ const NumberInput = ({ inputName, value, onChange, min, max, step }) => {
           onChange={handleValueChange}
           min={min}
           max={max}
-          step={step}
+          step={effectiveStep}
         />
       </div>
     </div>
