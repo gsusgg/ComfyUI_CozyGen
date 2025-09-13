@@ -9,7 +9,8 @@ This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but 
 Known Issues:
 
 *  If you use a batch higher than 1 they will generate and show in the gallery, but the preview only displays the first image of the batch.
-*  Not all other custom nodes cooperate, for example the bypass option fails to generate when trying to bypass nunchaku lora loaders.
+*  Not all other custom nodes cooperate.
+*  Bypassing chained lora nodes does not work correctly, and causes the gen to fail.
 
 Changelog:
 *  9/11/2025 - Update 1
