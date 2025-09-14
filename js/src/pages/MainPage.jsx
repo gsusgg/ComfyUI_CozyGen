@@ -7,7 +7,7 @@ import Modal from 'react-modal';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 // Modal styles (copied from Gallery.jsx for consistency)
-const isVideo = (filename) => /\.(mp4|webm)$/i.test(filename);
+const isVideo = (url) => /\.(mp4|webm)/i.test(url);
 
 const customStyles = {
   content: {
