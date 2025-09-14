@@ -144,7 +144,7 @@ const ImageInput = ({ input, value, onFormChange }) => {
     };
 
     return (
-        <div className="form-control mb-4 p-4 bg-base-200 rounded-box shadow-lg">
+        <div className="form-control mb-4 p-3 bg-base-200 rounded-box shadow-lg">
             <label className="label">
                 <span className="label-text text-lg font-semibold">{input.inputs.param_name}</span>
             </label>

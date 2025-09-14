@@ -7,6 +7,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '480px',
+      },
       colors: {
         'base-100': '#1a202c', // Very Dark Grey (almost black)
         'base-200': '#2d3748', // Dark Grey

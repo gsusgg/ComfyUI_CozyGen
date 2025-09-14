@@ -72,7 +72,12 @@ function App() {
   const [progressValue, setProgressValue] = useState(0);
   const [progressMax, setProgressMax] = useState(0);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  
+  const [statusText, setStatusText] = useState('Generating...');
+  const workflowDataRef = useRef(null);
+
+  useEffect(() => {
+    workflowDataRef.current = workflowData;
+  }, [workflowData]);
 
   const openModalWithImage = (imageSrc) => {
     setSelectedPreviewImage(imageSrc);
@@ -95,24 +100,30 @@ function App() {
             setPreviewImage(msg.data.image_url);
             localStorage.setItem('lastPreviewImage', msg.data.image_url);
           } else if (msg.data.status === 'no_new_image') {
-            // Do not update previewImage, keep the old one or clear if desired
-            // For now, just just clear loading state
+            // Do nothing
           }
           setIsLoading(false);
-          setProgressValue(0); // Reset progress
+          setProgressValue(0);
           setProgressMax(0);
         } else if (msg.type === 'progress') {
           setProgressValue(msg.data.value);
           setProgressMax(msg.data.max);
+        } else if (msg.type === 'executing') {
+          const nodeId = msg.data.node;
+          const currentWorkflowData = workflowDataRef.current;
+          if (nodeId && currentWorkflowData && currentWorkflowData[nodeId]) {
+            const node = currentWorkflowData[nodeId];
+            setStatusText(node.title || node.class_type);
+          }
         } else if (msg.type === 'cozygen_prompt_completed') {
           setIsLoading(false);
-          setProgressValue(0); // Reset progress
+          setProgressValue(0);
           setProgressMax(0);
         }
       };
 
       websocketRef.current.onclose = () => {
-        setTimeout(connectWebSocket, 1000); // Attempt to reconnect every second
+        setTimeout(connectWebSocket, 1000);
       };
 
       websocketRef.current.onerror = (err) => {
@@ -448,8 +459,8 @@ function App() {
     <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Right Column: Preview & Generate Button */}
-            <div className="flex flex-col space-y-4">
-                <div className="bg-base-200 shadow-lg rounded-lg p-4 min-h-[400px] lg:min-h-[500px] flex flex-col">
+            <div className="flex flex-col space-y-2">
+                <div className="bg-base-200 shadow-lg rounded-lg p-3 min-h-[400px] lg:min-h-[500px] flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold text-white">Preview</h2>
                         <button 
@@ -459,8 +470,8 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-4 overflow-y-auto">
-                        {isLoading && <div className="text-center w-full"><p className="text-lg">Generating...</p></div>}
+                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-2 overflow-y-auto">
+                        {isLoading && <div className="text-center w-full"><p className="text-lg">{statusText}</p></div>}
                         {!isLoading && !previewImage && (
                             <p className="text-gray-400">Your generated image will appear here.</p>
                         )}
@@ -491,7 +502,7 @@ function App() {
                 )}
             </div>
             {/* Left Column: Controls */}
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2">
                 <WorkflowSelector 
                   workflows={workflows}
                   selectedWorkflow={selectedWorkflow}
@@ -559,3 +570,4 @@ function App() {
   );
 }
 export default App;
+

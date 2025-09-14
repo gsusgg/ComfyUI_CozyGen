@@ -172,8 +172,84 @@ class CozyGenOutput(SaveImage):
         
         return results
 
+
+import imageio
+
+class CozyGenVideoOutput:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": 
+                    {"images": ("IMAGE", ),
+                     "frame_rate": ("INT", {"default": 8, "min": 1, "max": 24}),
+                     "loop_count": ("INT", {"default": 0, "min": 0, "max": 100}),
+                     "filename_prefix": ("STRING", {"default": "CozyGen/video"}),
+                     "format": (["video/webm", "video/mp4", "image/gif"],),
+                     "pingpong": ("BOOLEAN", {"default": False}),
+                     },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_video"
+    OUTPUT_NODE = True
+
+    CATEGORY = "CozyGen"
+
+    def save_video(self, images, frame_rate, loop_count, filename_prefix="CozyGen/video", format="video/webm", pingpong=False, prompt=None, extra_pnginfo=None):
+        filename_prefix += self.prefix_append
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        
+        if format == "image/gif":
+            ext = "gif"
+        elif format == "video/mp4":
+            ext = "mp4"
+        else:
+            ext = "webm"
+
+        file = f"{filename}_{counter:05}_.{ext}"
+        
+        # imageio requires uint8
+        video_data = (images.cpu().numpy() * 255).astype(np.uint8)
+
+        if pingpong:
+            video_data = np.concatenate((video_data, video_data[-2:0:-1]), axis=0)
+
+        if format == "image/gif":
+            imageio.mimsave(os.path.join(full_output_folder, file), video_data, duration=(1000/frame_rate)/1000, loop=loop_count)
+        else:
+            imageio.mimsave(os.path.join(full_output_folder, file), video_data, fps=frame_rate)
+
+        results.append({
+            "filename": file,
+            "subfolder": subfolder,
+            "type": self.type
+        })
+
+        server_instance = server.PromptServer.instance
+        if server_instance:
+            for result in results:
+                video_url = f"/view?filename={result['filename']}&subfolder={result['subfolder']}&type={result['type']}"
+                message_data = {
+                    "status": "video_generated",
+                    "video_url": video_url,
+                    "filename": result['filename'],
+                    "subfolder": result['subfolder'],
+                    "type": result['type']
+                }
+                server_instance.send_sync("cozygen_video_ready", message_data)
+                print(f"CozyGen: Sent custom WebSocket message: {{'type': 'cozygen_video_ready', 'data': {message_data}}}")
+
+        return { "ui": { "videos": results } }
+
 NODE_CLASS_MAPPINGS = {
     "CozyGenOutput": CozyGenOutput,
+    "CozyGenVideoOutput": CozyGenVideoOutput,
     "CozyGenDynamicInput": CozyGenDynamicInput,
     "CozyGenImageInput": CozyGenImageInput,
 }
