@@ -39,10 +39,12 @@ async def get_gallery_files(request: web.Request) -> web.Response:
         item_path = os.path.join(gallery_path, item_name)
         
         if os.path.isdir(item_path):
+            mod_time = os.path.getmtime(item_path)
             gallery_items.append({
                 "filename": item_name,
                 "type": "directory",
-                "subfolder": os.path.join(subfolder, item_name)
+                "subfolder": os.path.join(subfolder, item_name),
+                "mod_time": mod_time
             })
         elif item_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mp3', '.wav', '.flac')):
             mod_time = os.path.getmtime(item_path)
@@ -55,7 +57,7 @@ async def get_gallery_files(request: web.Request) -> web.Response:
             })
 
     # Sort items: directories first, then by modification time
-    gallery_items.sort(key=lambda x: (x['type'] != 'directory', x.get('mod_time', 0)), reverse=True)
+    gallery_items.sort(key=lambda x: (x['type'] == 'directory', x.get('mod_time', 0)), reverse=True)
 
     # Pagination
     total_items = len(gallery_items)

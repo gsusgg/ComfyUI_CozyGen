@@ -33,8 +33,7 @@ class CozyGenDynamicInput:
         return {
             "required": {
                 "param_name": ("STRING", {"default": "Dynamic Parameter"}),
-                "priority": ("INT", {"default": 0}),
-                "param_type": (["STRING", "INT", "FLOAT", "BOOLEAN", "DROPDOWN"], {"default": "STRING"}),
+                                    "priority": ("INT", {"default": 10}),                "param_type": (["STRING", "INT", "FLOAT", "BOOLEAN", "DROPDOWN"], {"default": "STRING"}),
                 "default_value": ("STRING", {"default": ""}),
             },
             "optional": {

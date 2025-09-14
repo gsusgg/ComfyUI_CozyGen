@@ -1,0 +1,422 @@
+{
+  "7": {
+    "inputs": {
+      "width": [
+        "29",
+        1
+      ],
+      "height": [
+        "29",
+        2
+      ],
+      "length": [
+        "47",
+        0
+      ],
+      "batch_size": 1,
+      "positive": [
+        "30",
+        0
+      ],
+      "negative": [
+        "17",
+        0
+      ],
+      "vae": [
+        "8",
+        0
+      ],
+      "start_image": [
+        "29",
+        0
+      ]
+    },
+    "class_type": "WanImageToVideo",
+    "_meta": {
+      "title": "WanImageToVideo"
+    }
+  },
+  "8": {
+    "inputs": {
+      "vae_name": "WAN\\wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "9": {
+    "inputs": {
+      "shift": 8,
+      "model": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "10": {
+    "inputs": {
+      "shift": 8,
+      "model": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "11": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": [
+        "49",
+        0
+      ],
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": 0,
+      "end_at_step": 2,
+      "return_with_leftover_noise": "enable",
+      "model": [
+        "10",
+        0
+      ],
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "7",
+        1
+      ],
+      "latent_image": [
+        "7",
+        2
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "12": {
+    "inputs": {
+      "sage_attention": "auto",
+      "model": [
+        "32",
+        0
+      ]
+    },
+    "class_type": "PathchSageAttentionKJ",
+    "_meta": {
+      "title": "Patch Sage Attention KJ"
+    }
+  },
+  "13": {
+    "inputs": {
+      "sage_attention": "auto",
+      "model": [
+        "31",
+        0
+      ]
+    },
+    "class_type": "PathchSageAttentionKJ",
+    "_meta": {
+      "title": "Patch Sage Attention KJ"
+    }
+  },
+  "16": {
+    "inputs": {
+      "samples": [
+        "19",
+        0
+      ],
+      "vae": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "17": {
+    "inputs": {
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走",
+      "clip": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "19": {
+    "inputs": {
+      "add_noise": "disable",
+      "noise_seed": [
+        "50",
+        0
+      ],
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": 2,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "9",
+        0
+      ],
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "7",
+        1
+      ],
+      "latent_image": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "27": {
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "29": {
+    "inputs": {
+      "width": [
+        "36",
+        0
+      ],
+      "height": [
+        "36",
+        1
+      ],
+      "upscale_method": "lanczos",
+      "keep_proportion": "resize",
+      "pad_color": "0, 0, 0",
+      "crop_position": "bottom",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "44",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "30": {
+    "inputs": {
+      "text": [
+        "46",
+        0
+      ],
+      "clip": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "31": {
+    "inputs": {
+      "unet_name": "WAN\\wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "32": {
+    "inputs": {
+      "unet_name": "WAN\\wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "36": {
+    "inputs": {
+      "max_width": 720,
+      "max_height": 720,
+      "round_to": 64,
+      "allow_upscale": true,
+      "batch_policy": "first",
+      "image": [
+        "44",
+        0
+      ]
+    },
+    "class_type": "AspectFitSizeChooser",
+    "_meta": {
+      "title": "Aspect Fit → Size (INTs)"
+    }
+  },
+  "37": {
+    "inputs": {
+      "output": "",
+      "input": [
+        "36",
+        0
+      ]
+    },
+    "class_type": "Display Int (rgthree)",
+    "_meta": {
+      "title": "Display Int (rgthree)"
+    }
+  },
+  "38": {
+    "inputs": {
+      "output": "",
+      "input": [
+        "36",
+        1
+      ]
+    },
+    "class_type": "Display Int (rgthree)",
+    "_meta": {
+      "title": "Display Int (rgthree)"
+    }
+  },
+  "44": {
+    "inputs": {
+      "param_name": "Image Input",
+      "image_filename": ""
+    },
+    "class_type": "CozyGenImageInput",
+    "_meta": {
+      "title": "CozyGen Image Input"
+    }
+  },
+  "45": {
+    "inputs": {
+      "frame_rate": [
+        "48",
+        0
+      ],
+      "loop_count": 0,
+      "filename_prefix": "CozyGen/video/cozyVid_",
+      "format": "video/mp4",
+      "pingpong": false,
+      "images": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "CozyGenVideoOutput",
+    "_meta": {
+      "title": "CozyGenVideoOutput"
+    }
+  },
+  "46": {
+    "inputs": {
+      "param_name": "Prompt",
+      "priority": 0,
+      "param_type": "STRING",
+      "default_value": "Prompt...",
+      "Multiline": false
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "47": {
+    "inputs": {
+      "param_name": "Length",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 81,
+      "min_value": 1,
+      "max_value": 16384,
+      "increment": 40
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "48": {
+    "inputs": {
+      "param_name": "Save Frame Rate",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 16,
+      "min_value": 1,
+      "max_value": 24,
+      "increment": 10
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "49": {
+    "inputs": {
+      "param_name": "noise_seedHigh",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 123141424124123,
+      "min_value": 0,
+      "max_value": 18446744073709552000,
+      "increment": 10,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "50": {
+    "inputs": {
+      "param_name": "noise_seedLow",
+      "priority": 0,
+      "param_type": "INT",
+      "default_value": 1231231321312,
+      "min_value": 0,
+      "max_value": 18446744073709552000,
+      "increment": 10,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  }
+}
