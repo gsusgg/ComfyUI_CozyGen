@@ -30,8 +30,8 @@ export const queuePrompt = async (prompt) => {
     return response.json();
 };
 
-export const getGallery = async (subfolder = '', page = 1, per_page = 20) => {
-    const response = await fetch(`${BASE_URL}/gallery?subfolder=${encodeURIComponent(subfolder)}&page=${page}&per_page=${per_page}`);
+export const getGallery = async (subfolder = '', page = 1, pageSize = 20) => {
+    const response = await fetch(`/cozygen/gallery?subfolder=${encodeURIComponent(subfolder)}&page=${page}&per_page=${pageSize}`);
     if (!response.ok) {
         throw new Error('Failed to fetch gallery items');
     }
