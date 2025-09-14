@@ -44,7 +44,7 @@ async def get_gallery_files(request: web.Request) -> web.Response:
                 "type": "directory",
                 "subfolder": os.path.join(subfolder, item_name)
             })
-        elif item_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+        elif item_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mp3', '.wav', '.flac')):
             mod_time = os.path.getmtime(item_path)
 
             gallery_items.append({

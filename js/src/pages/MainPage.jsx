@@ -7,6 +7,8 @@ import Modal from 'react-modal';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 // Modal styles (copied from Gallery.jsx for consistency)
+const isVideo = (filename) => /\.(mp4|webm)$/i.test(filename);
+
 const customStyles = {
   content: {
     position: 'relative',
@@ -36,6 +38,37 @@ const customStyles = {
 };
 
 Modal.setAppElement('#root');
+
+const renderPreviewContent = (url) => {
+    if (!url) return null;
+    if (isVideo(url)) {
+        return <video src={url} controls autoPlay loop muted className="max-w-full max-h-full object-contain rounded-lg" />;
+    } else {
+        return <img src={url} alt="Generated preview" className="max-w-full max-h-full object-contain rounded-lg cursor-pointer" />;
+    }
+};
+
+const renderModalContent = (url) => {
+    if (!url) return null;
+    if (isVideo(url)) {
+        return <video src={url} controls autoPlay loop className="max-w-full max-h-full object-contain rounded-lg" />;
+    } else {
+        return (
+            <TransformWrapper
+                initialScale={1}
+                minScale={0.5}
+                maxScale={5}
+                limitToBounds={false}
+                doubleClick={{ disabled: true }}
+                wheel={true}
+            >
+                <TransformComponent>
+                    <img src={url} alt="Generated preview" className="max-w-full max-h-full object-contain rounded-lg" />
+                </TransformComponent>
+            </TransformWrapper>
+        );
+    }
+};
 
 // Function to find nodes by class_type
 const findNodesByType = (workflow, type) => {
@@ -470,19 +503,12 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-2 overflow-y-auto">
+                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-2 overflow-y-auto" onClick={() => previewImage && openModalWithImage(previewImage)}>
                         {isLoading && <div className="text-center w-full"><p className="text-lg">{statusText}</p></div>}
                         {!isLoading && !previewImage && (
-                            <p className="text-gray-400">Your generated image will appear here.</p>
+                            <p className="text-gray-400">Your generated image or video will appear here.</p>
                         )}
-                        {!isLoading && previewImage && (
-                            <img
-                                src={previewImage}
-                                alt="Generated preview"
-                                className="max-w-full max-h-full object-contain rounded-lg cursor-pointer"
-                                onClick={() => openModalWithImage(previewImage)}
-                            />
-                        )}
+                        {!isLoading && previewImage && renderPreviewContent(previewImage)}
                     </div>
                 </div>
                 <button 
@@ -542,18 +568,7 @@ function App() {
             >
                 <div className="flex flex-col h-full w-full">
                     <div className="flex-grow flex items-center justify-center min-h-0">
-                        <TransformWrapper
-                            initialScale={1}
-                            minScale={0.5}
-                            maxScale={5}
-                            limitToBounds={false}
-                            doubleClick={{ disabled: true }}
-                            wheel={true}
-                        >
-                            <TransformComponent>
-                                <img src={selectedPreviewImage} alt="Generated preview" className="max-w-full max-h-full object-contain rounded-lg" />
-                            </TransformComponent>
-                        </TransformWrapper>
+                        {renderModalContent(selectedPreviewImage)}
                     </div>
                     <div className="flex-shrink-0 p-2 flex justify-center">
                         <button
