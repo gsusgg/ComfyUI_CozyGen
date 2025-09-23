@@ -246,15 +246,110 @@ class CozyGenVideoOutput:
 
         return { "ui": { "videos": results } }
 
+import comfy.samplers
+
+# Dynamically get model folder names
+models_path = folder_paths.models_dir
+model_folders = sorted([d.name for d in os.scandir(models_path) if d.is_dir()])
+static_choices = ["sampler", "scheduler"]
+all_choice_types = model_folders + static_choices
+
+class CozyGenFloatInput:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "Float Parameter"}),
+                "priority": ("INT", {"default": 10}),
+                "default_value": ("FLOAT", {"default": 1.0}),
+                "min_value": ("FLOAT", {"default": 0.0}),
+                "max_value": ("FLOAT", {"default": 1024.0}),
+                "step": ("FLOAT", {"default": 0.1}),
+                "add_randomize_toggle": ("BOOLEAN", {"default": False}),
+            }
+        }
+    RETURN_TYPES = ("FLOAT",)
+    FUNCTION = "get_value"
+    CATEGORY = "CozyGen/Static"
+    def get_value(self, param_name, priority, default_value, min_value, max_value, step, add_randomize_toggle):
+        return (default_value,)
+
+class CozyGenIntInput:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "Int Parameter"}),
+                "priority": ("INT", {"default": 10}),
+                "default_value": ("INT", {"default": 1}),
+                "min_value": ("INT", {"default": 0}),
+                "max_value": ("INT", {"default": 1024}),
+                "step": ("INT", {"default": 1}),
+                "add_randomize_toggle": ("BOOLEAN", {"default": False}),
+            }
+        }
+    RETURN_TYPES = ("INT",)
+    FUNCTION = "get_value"
+    CATEGORY = "CozyGen/Static"
+    def get_value(self, param_name, priority, default_value, min_value, max_value, step, add_randomize_toggle):
+        return (default_value,)
+
+class CozyGenStringInput:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "String Parameter"}),
+                "priority": ("INT", {"default": 10}),
+                "default_value": ("STRING", {"default": ""}),
+                "display_multiline": ("BOOLEAN", {"default": False}),
+            }
+        }
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "get_value"
+    CATEGORY = "CozyGen/Static"
+    def get_value(self, param_name, priority, default_value, display_multiline):
+        return (default_value,)
+
+class CozyGenChoiceInput:
+    _NODE_CLASS_NAME = "CozyGenChoiceInput"
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "param_name": ("STRING", {"default": "Choice Parameter"}),
+                "priority": ("INT", {"default": 10}),
+                "choice_type": (all_choice_types,),
+                "display_bypass": ("BOOLEAN", {"default": False}),
+            },
+            "hidden": {
+                "value": ("STRING", { "default": "" })
+            }
+        }
+    RETURN_TYPES = (node_typing.IO.ANY,)
+    FUNCTION = "get_value"
+    CATEGORY = "CozyGen/Static"
+    def get_value(self, param_name, priority, choice_type, display_bypass, value):
+        return (value,)
+
 NODE_CLASS_MAPPINGS = {
     "CozyGenOutput": CozyGenOutput,
     "CozyGenVideoOutput": CozyGenVideoOutput,
     "CozyGenDynamicInput": CozyGenDynamicInput,
     "CozyGenImageInput": CozyGenImageInput,
+    "CozyGenFloatInput": CozyGenFloatInput,
+    "CozyGenIntInput": CozyGenIntInput,
+    "CozyGenStringInput": CozyGenStringInput,
+    "CozyGenChoiceInput": CozyGenChoiceInput,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "CozyGenOutput": "CozyGen Output",
+    "CozyGenVideoOutput": "CozyGen Video Output",
     "CozyGenDynamicInput": "CozyGen Dynamic Input",
     "CozyGenImageInput": "CozyGen Image Input",
+    "CozyGenFloatInput": "CozyGen Float Input",
+    "CozyGenIntInput": "CozyGen Int Input",
+    "CozyGenStringInput": "CozyGen String Input",
+    "CozyGenChoiceInput": "CozyGen Choice Input",
 }

@@ -6,11 +6,6 @@ from PIL import Image
 import server # Import server for node_info
 import uuid # For generating unique filenames
 
-# Hardcoded lists for schedulers and samplers
-SCHEDULERS = ["simple", "sgm_uniform", "karras", "exponential", "ddim_uniform", "beta", "normal", "linear_quadratic", "kl_optimal"]
-SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral", "lms", "dpmpp_2s_a", "dpmpp_sde", "dpmpp_sde_gpu", "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "dpmpp_3m_sde", "dpmpp_3m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
-
-
 async def get_hello(request: web.Request) -> web.Response:
     return web.json_response({"status": "success", "message": "Hello from the CozyGen API!"})
 
@@ -133,23 +128,43 @@ async def get_workflow_file(request: web.Request) -> web.Response:
     except Exception as e:
         return web.json_response({"error": f"Error reading workflow file: {e}"}, status=500)
 
+import comfy.samplers
+
+# Get all valid model folder types from ComfyUI itself
+valid_model_types = folder_paths.folder_names_and_paths.keys()
+
+# A map for aliases to official folder_paths names
+alias_map = {
+    "unet": "unet_gguf"
+}
+
 async def get_choices(request: web.Request) -> web.Response:
     choice_type = request.rel_url.query.get('type', '')
+    print(f"[CozyGen Debug] Received get_choices request for type: {choice_type}") # DEBUG
+
     if not choice_type:
         return web.json_response({"error": "Missing 'type' query parameter"}, status=400)
 
+    # Resolve alias
+    resolved_choice_type = alias_map.get(choice_type, choice_type)
+
     choices = []
-    if choice_type == "schedulers_list":
-        choices = SCHEDULERS
-    elif choice_type == "samplers_list":
-        choices = SAMPLERS
+    print(f"[CozyGen Debug] Valid model types are: {list(valid_model_types)}") # DEBUG
+
+    if resolved_choice_type == "scheduler":
+        print("[CozyGen Debug] Handling as SCHEDULER type.") # DEBUG
+        choices = comfy.samplers.KSampler.SCHEDULERS
+    elif resolved_choice_type == "sampler":
+        print("[CozyGen Debug] Handling as SAMPLER type.") # DEBUG
+        choices = comfy.samplers.KSampler.SAMPLERS
+    elif resolved_choice_type in valid_model_types:
+        print(f"[CozyGen Debug] Handling as a valid model folder type: {resolved_choice_type}") # DEBUG
+        choices = folder_paths.get_filename_list(resolved_choice_type)
     else:
-        try:
-            choices = folder_paths.get_filename_list(choice_type)
-        except Exception as e:
-            print(f"CozyGen: Error getting choices for type '{choice_type}': {e}")
-            return web.json_response({"error": f"Error getting choices for type '{choice_type}': {e}"}, status=500)
+        print(f"[CozyGen Debug] ERROR: choice_type '{choice_type}' (resolved to '{resolved_choice_type}') is not a special type or a valid model folder.") # DEBUG
+        return web.json_response({"error": f"Invalid choice type: {choice_type}"}, status=400)
     
+    print(f"[CozyGen Debug] Found choices: {choices}") # DEBUG
     return web.json_response({"choices": choices})
 
 routes = [

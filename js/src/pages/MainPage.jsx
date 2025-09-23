@@ -208,40 +208,58 @@ function App() {
             }
         }
 
-        // Find both CozyGenDynamicInput and CozyGenImageInput nodes
-        const dynamicInputsNodes = findNodesByType(data, 'CozyGenDynamicInput');
-        const imageInputNodes = findNodesByType(data, 'CozyGenImageInput');
+        // New: Define all input types the UI should recognize
+        const COZYGEN_INPUT_TYPES = [
+            'CozyGenDynamicInput', 
+            'CozyGenImageInput', 
+            'CozyGenFloatInput', 
+            'CozyGenIntInput', 
+            'CozyGenStringInput',
+            'CozyGenChoiceInput'
+        ];
 
-        // Combine and sort them by priority (CozyGenDynamicInput only has priority)
-        const allInputs = [...dynamicInputsNodes, ...imageInputNodes];
-        allInputs.sort((a, b) => (a.inputs['priority'] || 0) - (b.inputs['priority'] || 0));
+        // Find all nodes that are one of our recognized input types
+        const allInputNodes = Object.values(data).filter(node => COZYGEN_INPUT_TYPES.includes(node.class_type));
 
-        // Fetch choices for dropdowns (only for CozyGenDynamicInput nodes)
-        const inputsWithChoices = await Promise.all(allInputs.map(async (input) => {
-            if (input.class_type === 'CozyGenDynamicInput' && input.inputs['param_type'] === 'DROPDOWN') {
+        // Add the node's ID to its object for easy reference
+        for (const nodeId in data) {
+            if (COZYGEN_INPUT_TYPES.includes(data[nodeId].class_type)) {
+                data[nodeId].id = nodeId;
+            }
+        }
+
+        // Sort all inputs by the priority field
+        allInputNodes.sort((a, b) => (a.inputs['priority'] || 0) - (b.inputs['priority'] || 0));
+
+        // Fetch choices for dropdowns (applies to both Dynamic and Choice inputs)
+        const inputsWithChoices = await Promise.all(allInputNodes.map(async (input) => {
+            const isDynamicDropdown = input.class_type === 'CozyGenDynamicInput' && input.inputs['param_type'] === 'DROPDOWN';
+            const isChoiceNode = input.class_type === 'CozyGenChoiceInput';
+
+            if (isDynamicDropdown || isChoiceNode) {
                 const param_name = input.inputs['param_name'];
-                // New logic: Prioritize 'choice_type' if it exists
                 let choiceType = input.inputs['choice_type'] || (input.properties && input.properties['choice_type']);
 
-                // Fallback to the old mapping if 'choice_type' is not provided
-                if (!choiceType) {
+                if (!choiceType && isDynamicDropdown) { // Fallback for older dynamic nodes
                     choiceType = choiceTypeMapping[param_name];
                 }
 
                 if (choiceType) {
                     try {
                         const choicesData = await getChoices(choiceType);
+                        // For dynamic nodes, we put choices in a hidden field.
+                        // For the new choice node, the JS will handle it, but we can preload here.
                         input.inputs.choices = choicesData.choices || [];
                     } catch (error) {
                         console.error(`Error fetching choices for ${param_name} (choiceType: ${choiceType}):`, error);
-                        input.inputs.choices = []; // Set to empty array on error
+                        input.inputs.choices = [];
                     }
                 }
             }
             return input;
         }));
 
-        setDynamicInputs(inputsWithChoices); // Update dynamicInputs with fetched choices
+        setDynamicInputs(inputsWithChoices);
 
         const savedFormData = JSON.parse(localStorage.getItem(`${selectedWorkflow}_formData`)) || {};
         
@@ -411,7 +429,7 @@ function App() {
 
   return (
     <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-28">
             {/* Right Column: Preview & Generate Button */}
             <div className="flex flex-col space-y-2">
                 <div className="bg-base-200 shadow-lg rounded-lg p-3 min-h-[400px] lg:min-h-[500px] flex flex-col">
@@ -432,21 +450,7 @@ function App() {
                         {!isLoading && previewImage && renderPreviewContent(previewImage)}
                     </div>
                 </div>
-                <button 
-                    onClick={handleGenerate}
-                    disabled={isLoading || !workflowData}
-                    className="w-full bg-accent text-white font-bold text-lg py-4 px-4 rounded-lg hover:bg-accent-focus transition duration-300 disabled:bg-base-300 disabled:cursor-not-allowed shadow-lg"
-                >
-                    {isLoading ? 'Generating...' : 'Generate'}
-                </button>
-                {(isLoading && progressMax > 0) && (
-                    <div className="w-full bg-base-300 rounded-full h-2.5 mt-2">
-                        <div 
-                            className="bg-accent h-2.5 rounded-full transition-all duration-1000 ease-out"
-                            style={{ width: `${(progressValue / progressMax) * 100}%` }}
-                        ></div>
-                    </div>
-                )}
+                {/* Generate button moved to sticky footer */}
             </div>
             {/* Left Column: Controls */}
             <div className="flex flex-col space-y-2">
@@ -456,9 +460,30 @@ function App() {
                   onSelect={handleWorkflowSelect}
                 />
 
-                {/* Render DynamicForm for all CozyGenDynamicInput nodes */}
+                {/* New, Corrected Rendering Logic */}
                 <DynamicForm
-                    inputs={dynamicInputs.filter(input => input.class_type === 'CozyGenDynamicInput')}
+                    inputs={dynamicInputs
+                        .filter(input => input.class_type !== 'CozyGenImageInput')
+                        .map(input => {
+                            // Map new static node properties to the format DynamicForm expects
+                            if (['CozyGenFloatInput', 'CozyGenIntInput', 'CozyGenStringInput', 'CozyGenChoiceInput'].includes(input.class_type)) {
+                                let param_type = input.class_type.replace('CozyGen', '').replace('Input', '').toUpperCase();
+                                if (param_type === 'CHOICE') {
+                                    param_type = 'DROPDOWN'; // Map Choice to Dropdown
+                                }
+                                return {
+                                    ...input,
+                                    inputs: {
+                                        ...input.inputs,
+                                        param_type: param_type,
+                                        // Conform to the expected 'Multiline' prop
+                                        Multiline: input.inputs.display_multiline || false, 
+                                    }
+                                };
+                            }
+                            return input; // Return original CozyGenDynamicInput as is
+                        })
+                    }
                     formData={formData}
                     onFormChange={handleFormChange}
                     randomizeState={randomizeState}
@@ -467,15 +492,36 @@ function App() {
                     onBypassToggle={handleBypassToggle}
                 />
 
-                {/* Render ImageInput for CozyGenImageInput nodes */}
+                {/* Render ImageInput separately */}
                 {dynamicInputs.filter(input => input.class_type === 'CozyGenImageInput').map(input => (
                     <ImageInput
                         key={input.id}
                         input={input}
-                        value={formData[input.inputs.param_name]} // Pass the relevant part of formData
+                        value={formData[input.inputs.param_name]}
                         onFormChange={handleFormChange}
                     />
                 ))}
+            </div>
+        </div>
+
+        {/* Sticky Generate Button Footer */}
+        <div className="fixed bottom-0 left-0 right-0 bg-base-100/80 backdrop-blur-sm p-4 border-t border-base-300 z-10 shadow-lg">
+            <div className="max-w-2xl mx-auto"> {/* Centered and max-width */}
+                <button
+                    onClick={handleGenerate}
+                    disabled={isLoading || !workflowData}
+                    className="w-full bg-accent text-white font-bold text-lg py-4 px-4 rounded-lg hover:bg-accent-focus transition duration-300 disabled:bg-base-300 disabled:cursor-not-allowed shadow-lg"
+                >
+                    {isLoading ? 'Generating...' : 'Generate'}
+                </button>
+                {(isLoading && progressMax > 0) && (
+                    <div className="w-full bg-base-300 rounded-full h-2.5 mt-2">
+                        <div
+                            className="bg-accent h-2.5 rounded-full transition-all duration-1000 ease-out"
+                            style={{ width: `${(progressValue / progressMax) * 100}%` }}
+                        ></div>
+                    </div>
+                )}
             </div>
         </div>
 
