@@ -35,6 +35,9 @@ const customStyles = {
 
 Modal.setAppElement('#root');
 
+const isVideo = (filename) => /\.(mp4|webm)$/i.test(filename);
+const isAudio = (filename) => /\.(mp3|wav|flac)$/i.test(filename);
+
 const Gallery = () => {
     const [items, setItems] = useState([]);
     const [path, setPath] = useState(localStorage.getItem('galleryPath') || '');
@@ -42,11 +45,12 @@ const Gallery = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [pageSize, setPageSize] = useState(parseInt(localStorage.getItem('galleryPageSize'), 10) || 20);
 
     useEffect(() => {
         const fetchGallery = async () => {
             try {
-                const galleryData = await getGallery(path, page);
+                const galleryData = await getGallery(path, page, pageSize);
                 if (galleryData && galleryData.items) {
                     setItems(galleryData.items);
                     setTotalPages(galleryData.total_pages);
@@ -62,7 +66,7 @@ const Gallery = () => {
         };
         fetchGallery();
         localStorage.setItem('galleryPath', path);
-    }, [path, page]);
+    }, [path, page, pageSize]);
 
     const handleSelect = (item) => {
         if (item.type === 'directory') {
@@ -72,6 +76,13 @@ const Gallery = () => {
             setSelectedItem(item);
             setModalIsOpen(true);
         }
+    };
+
+    const handlePageSizeChange = (e) => {
+        const newSize = parseInt(e.target.value, 10);
+        setPageSize(newSize);
+        setPage(1); // Reset to first page when page size changes
+        localStorage.setItem('galleryPageSize', newSize);
     };
 
     const handleBreadcrumbClick = (index) => {
@@ -95,19 +106,46 @@ const Gallery = () => {
     };
 
     const handleNext = () => {
-        const images = items.filter(item => item.type !== 'directory');
-        if (images.length <= 1) return;
-        const currentIndex = images.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
-        const nextIndex = (currentIndex + 1) % images.length;
-        setSelectedItem(images[nextIndex]);
+        const mediaItems = items.filter(item => item.type !== 'directory');
+        if (mediaItems.length <= 1) return;
+        const currentIndex = mediaItems.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
+        const nextIndex = (currentIndex + 1) % mediaItems.length;
+        setSelectedItem(mediaItems[nextIndex]);
     };
 
     const handlePrevious = () => {
-        const images = items.filter(item => item.type !== 'directory');
-        if (images.length <= 1) return;
-        const currentIndex = images.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
-        const prevIndex = (currentIndex - 1 + images.length) % images.length;
-        setSelectedItem(images[prevIndex]);
+        const mediaItems = items.filter(item => item.type !== 'directory');
+        if (mediaItems.length <= 1) return;
+        const currentIndex = mediaItems.findIndex(item => item.filename === selectedItem.filename && item.subfolder === selectedItem.subfolder);
+        const prevIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length;
+        setSelectedItem(mediaItems[prevIndex]);
+    };
+
+    const renderModalContent = () => {
+        if (!selectedItem) return null;
+
+        const fileUrl = `/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`;
+
+        if (isVideo(selectedItem.filename)) {
+            return <video src={fileUrl} controls autoPlay loop className="max-w-full max-h-full object-contain rounded-lg" />;
+        } else if (isAudio(selectedItem.filename)) {
+            return <audio src={fileUrl} controls autoPlay loop className="w-full" />;
+        } else {
+            return (
+                <TransformWrapper
+                    initialScale={1}
+                    minScale={0.5}
+                    maxScale={5}
+                    limitToBounds={false}
+                    doubleClick={{ disabled: true }}
+                    wheel={true}
+                >
+                    <TransformComponent>
+                        <img src={fileUrl} alt={selectedItem.filename} className="max-w-full max-h-full object-contain rounded-lg" />
+                    </TransformComponent>
+                </TransformWrapper>
+            );
+        }
     };
 
     const breadcrumbs = path.split(/[\/]/).filter(Boolean); // Handle both windows and unix paths
@@ -134,13 +172,8 @@ const Gallery = () => {
                     Up
                 </button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {items.map(item => (
-                    <GalleryItem key={item.filename} item={item} onSelect={handleSelect} />
-                ))}
-            </div>
 
-            <div className="flex justify-center items-center space-x-4 mt-4">
+            <div className="flex justify-center items-center space-x-4 mb-4">
                 <button
                     onClick={() => setPage(page > 1 ? page - 1 : 1)}
                     disabled={page <= 1}
@@ -158,6 +191,26 @@ const Gallery = () => {
                 >
                     Next
                 </button>
+                <div className="flex items-center space-x-2">
+                    <label htmlFor="page-size-selector" className="text-sm">Per Page:</label>
+                    <select
+                        id="page-size-selector"
+                        className="select select-bordered select-sm bg-base-100"
+                        value={pageSize}
+                        onChange={handlePageSizeChange}
+                    >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {items.map(item => (
+                    <GalleryItem key={item.filename} item={item} onSelect={handleSelect} />
+                ))}
             </div>
 
             {selectedItem && (
@@ -169,18 +222,7 @@ const Gallery = () => {
                 >
                     <div className="flex flex-col h-full w-full">
                         <div className="flex-grow flex items-center justify-center min-h-0">
-                            <TransformWrapper
-                                initialScale={1}
-                                minScale={0.5}
-                                maxScale={5}
-                                limitToBounds={false}
-                                doubleClick={{ disabled: true }}
-                                wheel={true}
-                            >
-                                <TransformComponent>
-                                    <img src={`/view?filename=${selectedItem.filename}&subfolder=${selectedItem.subfolder}&type=output`} alt={selectedItem.filename} className="max-w-full max-h-full object-contain rounded-lg" />
-                                </TransformComponent>
-                            </TransformWrapper>
+                            {renderModalContent()}
                         </div>
                         <div className="flex-shrink-0 p-2 flex justify-center items-center space-x-4">
                             <button

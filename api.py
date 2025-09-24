@@ -6,11 +6,6 @@ from PIL import Image
 import server # Import server for node_info
 import uuid # For generating unique filenames
 
-# Hardcoded lists for schedulers and samplers
-SCHEDULERS = ["simple", "sgm_uniform", "karras", "exponential", "ddim_uniform", "beta", "normal", "linear_quadratic", "kl_optimal"]
-SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral", "lms", "dpmpp_2s_a", "dpmpp_sde", "dpmpp_sde_gpu", "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "dpmpp_3m_sde", "dpmpp_3m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
-
-
 async def get_hello(request: web.Request) -> web.Response:
     return web.json_response({"status": "success", "message": "Hello from the CozyGen API!"})
 
@@ -39,12 +34,14 @@ async def get_gallery_files(request: web.Request) -> web.Response:
         item_path = os.path.join(gallery_path, item_name)
         
         if os.path.isdir(item_path):
+            mod_time = os.path.getmtime(item_path)
             gallery_items.append({
                 "filename": item_name,
                 "type": "directory",
-                "subfolder": os.path.join(subfolder, item_name)
+                "subfolder": os.path.join(subfolder, item_name),
+                "mod_time": mod_time
             })
-        elif item_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+        elif item_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mp3', '.wav', '.flac')):
             mod_time = os.path.getmtime(item_path)
 
             gallery_items.append({
@@ -55,7 +52,7 @@ async def get_gallery_files(request: web.Request) -> web.Response:
             })
 
     # Sort items: directories first, then by modification time
-    gallery_items.sort(key=lambda x: (x['type'] != 'directory', x.get('mod_time', 0)), reverse=True)
+    gallery_items.sort(key=lambda x: (x['type'] == 'directory', x.get('mod_time', 0)), reverse=True)
 
     # Pagination
     total_items = len(gallery_items)
@@ -131,22 +128,39 @@ async def get_workflow_file(request: web.Request) -> web.Response:
     except Exception as e:
         return web.json_response({"error": f"Error reading workflow file: {e}"}, status=500)
 
+import comfy.samplers
+
+# Get all valid model folder types from ComfyUI itself
+valid_model_types = folder_paths.folder_names_and_paths.keys()
+
+# A map for aliases to official folder_paths names
+alias_map = {
+    "unet": "unet_gguf"
+}
+
 async def get_choices(request: web.Request) -> web.Response:
     choice_type = request.rel_url.query.get('type', '')
+
     if not choice_type:
         return web.json_response({"error": "Missing 'type' query parameter"}, status=400)
 
+    # Alias map for backward compatibility
+    alias_map = {
+        "samplers_list": "sampler",
+        "schedulers_list": "scheduler",
+        "unet": "unet_gguf" # Example of another potential alias
+    }
+    resolved_choice_type = alias_map.get(choice_type, choice_type)
+
     choices = []
-    if choice_type == "schedulers_list":
-        choices = SCHEDULERS
-    elif choice_type == "samplers_list":
-        choices = SAMPLERS
+    if resolved_choice_type == "scheduler":
+        choices = comfy.samplers.KSampler.SCHEDULERS
+    elif resolved_choice_type == "sampler":
+        choices = comfy.samplers.KSampler.SAMPLERS
+    elif resolved_choice_type in valid_model_types:
+        choices = folder_paths.get_filename_list(resolved_choice_type)
     else:
-        try:
-            choices = folder_paths.get_filename_list(choice_type)
-        except Exception as e:
-            print(f"CozyGen: Error getting choices for type '{choice_type}': {e}")
-            return web.json_response({"error": f"Error getting choices for type '{choice_type}': {e}"}, status=500)
+        return web.json_response({"error": f"Invalid choice type: {choice_type}"}, status=400)
     
     return web.json_response({"choices": choices})
 

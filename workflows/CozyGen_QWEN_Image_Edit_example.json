@@ -1,0 +1,409 @@
+{
+  "3": {
+    "inputs": {
+      "seed": [
+        "122",
+        0
+      ],
+      "steps": [
+        "126",
+        0
+      ],
+      "cfg": 4,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "75",
+        0
+      ],
+      "positive": [
+        "111",
+        0
+      ],
+      "negative": [
+        "110",
+        0
+      ],
+      "latent_image": [
+        "88",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "38": {
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "39": {
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "66": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "131",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "75": {
+    "inputs": {
+      "strength": 1,
+      "model": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "CFGNorm",
+    "_meta": {
+      "title": "CFGNorm"
+    }
+  },
+  "88": {
+    "inputs": {
+      "pixels": [
+        "93",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "93": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 1,
+      "image": [
+        "118",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "Scale Image to Total Pixels"
+    }
+  },
+  "110": {
+    "inputs": {
+      "prompt": "",
+      "clip": [
+        "38",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ],
+      "image1": [
+        "93",
+        0
+      ],
+      "image2": [
+        "119",
+        0
+      ],
+      "image3": [
+        "120",
+        0
+      ]
+    },
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "_meta": {
+      "title": "TextEncodeQwenImageEditPlus"
+    }
+  },
+  "111": {
+    "inputs": {
+      "prompt": [
+        "121",
+        0
+      ],
+      "clip": [
+        "38",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ],
+      "image1": [
+        "93",
+        0
+      ],
+      "image2": [
+        "119",
+        0
+      ],
+      "image3": [
+        "120",
+        0
+      ]
+    },
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "_meta": {
+      "title": "TextEncodeQwenImageEditPlus"
+    }
+  },
+  "112": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "115": {
+    "inputs": {
+      "model_name": [
+        "125",
+        0
+      ],
+      "cpu_offload": "auto"
+    },
+    "class_type": "NunchakuQwenImageDiTLoader",
+    "_meta": {
+      "title": "Nunchaku Qwen-Image DiT Loader"
+    }
+  },
+  "117": {
+    "inputs": {
+      "filename_prefix": "CozyGen/qwen_edit/output",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "CozyGenOutput",
+    "_meta": {
+      "title": "CozyGen Output"
+    }
+  },
+  "118": {
+    "inputs": {
+      "param_name": "Image 1 Input",
+      "image_filename": ""
+    },
+    "class_type": "CozyGenImageInput",
+    "_meta": {
+      "title": "CozyGen Image Input"
+    }
+  },
+  "119": {
+    "inputs": {
+      "param_name": "Image 2 Input",
+      "image_filename": ""
+    },
+    "class_type": "CozyGenImageInput",
+    "_meta": {
+      "title": "CozyGen Image Input"
+    }
+  },
+  "120": {
+    "inputs": {
+      "param_name": "Image 3 Input",
+      "image_filename": ""
+    },
+    "class_type": "CozyGenImageInput",
+    "_meta": {
+      "title": "CozyGen Image Input"
+    }
+  },
+  "121": {
+    "inputs": {
+      "param_name": "Prompt",
+      "priority": 1,
+      "default_value": "",
+      "display_multiline": true
+    },
+    "class_type": "CozyGenStringInput",
+    "_meta": {
+      "title": "CozyGen String Input"
+    }
+  },
+  "122": {
+    "inputs": {
+      "param_name": "Seed",
+      "priority": 10,
+      "default_value": 1234,
+      "min_value": 0,
+      "max_value": 9999999999,
+      "step": 1,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenIntInput",
+    "_meta": {
+      "title": "CozyGen Int Input"
+    }
+  },
+  "124": {
+    "inputs": {
+      "lora_name": [
+        "127",
+        0
+      ],
+      "strength_model": [
+        "128",
+        0
+      ],
+      "model": [
+        "115",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "125": {
+    "inputs": {
+      "param_name": "Model",
+      "priority": 14,
+      "choice_type": "diffusion_models",
+      "default_choice": "None",
+      "display_bypass": false
+    },
+    "class_type": "CozyGenChoiceInput",
+    "_meta": {
+      "title": "CozyGen Choice Input"
+    }
+  },
+  "126": {
+    "inputs": {
+      "param_name": "Steps",
+      "priority": 10,
+      "default_value": 40,
+      "min_value": 0,
+      "max_value": 9999999999,
+      "step": 1,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenIntInput",
+    "_meta": {
+      "title": "CozyGen Int Input"
+    }
+  },
+  "127": {
+    "inputs": {
+      "param_name": "Lora 1",
+      "priority": 12,
+      "choice_type": "loras",
+      "default_choice": "None",
+      "display_bypass": true
+    },
+    "class_type": "CozyGenChoiceInput",
+    "_meta": {
+      "title": "CozyGen Choice Input"
+    }
+  },
+  "128": {
+    "inputs": {
+      "param_name": "Lora 1 Str",
+      "priority": 12,
+      "default_value": 1,
+      "min_value": 0,
+      "max_value": 1024,
+      "step": 0.1,
+      "add_randomize_toggle": false
+    },
+    "class_type": "CozyGenFloatInput",
+    "_meta": {
+      "title": "CozyGen Float Input"
+    }
+  },
+  "129": {
+    "inputs": {
+      "param_name": "Lora 2",
+      "priority": 13,
+      "choice_type": "loras",
+      "default_choice": "None",
+      "display_bypass": true
+    },
+    "class_type": "CozyGenChoiceInput",
+    "_meta": {
+      "title": "CozyGen Choice Input"
+    }
+  },
+  "130": {
+    "inputs": {
+      "param_name": "Lora 2 Str",
+      "priority": 13,
+      "default_value": 1,
+      "min_value": 0,
+      "max_value": 1024,
+      "step": 0.1,
+      "add_randomize_toggle": false
+    },
+    "class_type": "CozyGenFloatInput",
+    "_meta": {
+      "title": "CozyGen Float Input"
+    }
+  },
+  "131": {
+    "inputs": {
+      "lora_name": [
+        "129",
+        0
+      ],
+      "strength_model": [
+        "130",
+        0
+      ],
+      "model": [
+        "124",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  }
+}

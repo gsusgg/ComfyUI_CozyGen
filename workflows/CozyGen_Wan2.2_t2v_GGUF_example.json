@@ -1,0 +1,383 @@
+{
+  "71": {
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "72": {
+    "inputs": {
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走，裸露，NSFW",
+      "clip": [
+        "71",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "73": {
+    "inputs": {
+      "vae_name": "WAN\\wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "74": {
+    "inputs": {
+      "width": [
+        "122",
+        0
+      ],
+      "height": [
+        "124",
+        0
+      ],
+      "length": [
+        "123",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyHunyuanLatentVideo",
+    "_meta": {
+      "title": "EmptyHunyuanLatentVideo"
+    }
+  },
+  "78": {
+    "inputs": {
+      "add_noise": "disable",
+      "noise_seed": 0,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": 2,
+      "end_at_step": 4,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "86",
+        0
+      ],
+      "positive": [
+        "89",
+        0
+      ],
+      "negative": [
+        "72",
+        0
+      ],
+      "latent_image": [
+        "81",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "81": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": [
+        "126",
+        0
+      ],
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": 0,
+      "end_at_step": 2,
+      "return_with_leftover_noise": "enable",
+      "model": [
+        "82",
+        0
+      ],
+      "positive": [
+        "89",
+        0
+      ],
+      "negative": [
+        "72",
+        0
+      ],
+      "latent_image": [
+        "74",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "82": {
+    "inputs": {
+      "shift": 5,
+      "model": [
+        "83",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "83": {
+    "inputs": {
+      "lora_name": "WAN\\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors",
+      "strength_model": 1,
+      "model": [
+        "114",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "85": {
+    "inputs": {
+      "lora_name": "WAN\\Wan2.2-Lightning_T2V-v1.1-A14B-4steps-lora_LOW_fp16.safetensors",
+      "strength_model": 1,
+      "model": [
+        "115",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "86": {
+    "inputs": {
+      "shift": 5,
+      "model": [
+        "85",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "87": {
+    "inputs": {
+      "samples": [
+        "78",
+        0
+      ],
+      "vae": [
+        "73",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "89": {
+    "inputs": {
+      "text": [
+        "125",
+        0
+      ],
+      "clip": [
+        "71",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "114": {
+    "inputs": {
+      "unet_name": "WAN\\Wan2.2-T2V-A14B-HighNoise-Q5_K_M.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "115": {
+    "inputs": {
+      "unet_name": "WAN\\Wan2.2-T2V-A14B-LowNoise-Q5_K_M.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "118": {
+    "inputs": {
+      "frame_rate": [
+        "121",
+        0
+      ],
+      "loop_count": 0,
+      "filename_prefix": [
+        "120",
+        0
+      ],
+      "format": "video/mp4",
+      "pingpong": false,
+      "images": [
+        "87",
+        0
+      ]
+    },
+    "class_type": "CozyGenVideoOutput",
+    "_meta": {
+      "title": "CozyGenVideoOutput"
+    }
+  },
+  "120": {
+    "inputs": {
+      "param_name": "Filename Prefix",
+      "priority": 15,
+      "param_type": "STRING",
+      "default_value": "CozyGen/video/cozy_"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "121": {
+    "inputs": {
+      "param_name": "Frame Rate",
+      "priority": 14,
+      "param_type": "INT",
+      "default_value": 16,
+      "min_value": 1,
+      "max_value": 24,
+      "increment": 10
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "122": {
+    "inputs": {
+      "param_name": "Width",
+      "priority": 13,
+      "param_type": "INT",
+      "default_value": 720,
+      "min_value": 16,
+      "max_value": 16384,
+      "increment": 160
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "123": {
+    "inputs": {
+      "param_name": "Length",
+      "priority": 14,
+      "param_type": "INT",
+      "default_value": "81"
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "124": {
+    "inputs": {
+      "param_name": "Height",
+      "priority": 13,
+      "param_type": "INT",
+      "default_value": 720,
+      "min_value": 16,
+      "max_value": 16384,
+      "increment": 160
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "125": {
+    "inputs": {
+      "param_name": "Prompt",
+      "priority": 1,
+      "param_type": "STRING",
+      "default_value": "",
+      "Multiline": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "126": {
+    "inputs": {
+      "param_name": "Seed",
+      "priority": 14,
+      "param_type": "INT",
+      "default_value": 1234,
+      "min_value": 0,
+      "max_value": 18446744073709552000,
+      "increment": 10,
+      "add_randomize_toggle": true
+    },
+    "class_type": "CozyGenDynamicInput",
+    "_meta": {
+      "title": "CozyGen Dynamic Input"
+    }
+  },
+  "128": {
+    "inputs": {
+      "start": [
+        "123",
+        0
+      ],
+      "length": 1,
+      "image": [
+        "87",
+        0
+      ]
+    },
+    "class_type": "ImageFromBatch+",
+    "_meta": {
+      "title": "🔧 Image From Batch"
+    }
+  },
+  "129": {
+    "inputs": {
+      "filename_prefix": [
+        "120",
+        0
+      ],
+      "images": [
+        "128",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

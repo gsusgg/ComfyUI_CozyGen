@@ -2,7 +2,7 @@ import React from 'react';
 
 const WorkflowSelector = ({ workflows, selectedWorkflow, onSelect }) => {
   return (
-    <div className="bg-base-200 shadow-lg rounded-lg p-4">
+    <div className="bg-base-200 shadow-lg rounded-lg p-3">
       <label htmlFor="workflow-selector" className="block text-lg font-semibold text-white mb-2">
         Workflow
       </label>

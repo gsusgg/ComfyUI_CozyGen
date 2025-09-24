@@ -22,6 +22,7 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         value={value} 
                         onChange={(val) => onFormChange(param_name, val)} 
                         multiline={inputs['Multiline']}
+                        disabled={isBypassed}
                     />;
             break;
         case 'INT':
@@ -36,12 +37,14 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         max={inputs['max_value']}
                         step={inputs['step']}
                         paramType={param_type}
+                        disabled={isBypassed}
                     />;
             break;
         case 'BOOLEAN':
             inputComponent = <BooleanInput
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
+                        disabled={isBypassed}
                     />;
             break;
         case 'DROPDOWN':
@@ -49,6 +52,7 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
                         choices={inputs['choices']}
+                        disabled={isBypassed}
                     />;
             break;
         default:
@@ -92,18 +96,18 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
 const DynamicForm = ({ inputs, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle }) => {
   if (!inputs || inputs.length === 0) {
     return (
-        <div className="bg-base-200 shadow-lg rounded-lg p-4 text-center">
+        <div className="bg-base-200 shadow-lg rounded-lg p-3 text-center">
             <p className="text-gray-400">Select a workflow to see its controls.</p>
         </div>
     );
   }
 
   return (
-    <div className="bg-base-200 shadow-lg rounded-lg p-4">
+    <div className="bg-base-200 shadow-lg rounded-lg p-3">
       <h2 className="text-lg font-semibold text-white mb-2">Controls</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-x-4 gap-y-4">
         {inputs.map(input => (
-            <div key={input.id} className={input.inputs['Multiline'] ? 'sm:col-span-2' : ''}>{renderInput(input, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle)}</div>
+            <div key={input.id} className={input.inputs['Multiline'] ? 'xs:col-span-2' : ''}>{renderInput(input, formData, onFormChange, randomizeState, onRandomizeToggle, bypassedState, onBypassToggle)}</div>
         ))}
       </div>
     </div>
