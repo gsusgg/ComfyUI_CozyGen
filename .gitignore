@@ -40,4 +40,10 @@ node_modules/
 # Cursor related files
 .cursor/
 
-workflows/old/
+workflows/
+
+!workflows/CozyGen_Wan2.2_i2v_GGUF_example.json
+!workflows/CozyGen_Wan2.2_t2v_GGUF_example.json
+!workflows/CozyGen_Flux_example.json
+!workflows/CozyGen_i2i_example.json
+!workflows/CozyGen_QWEN_Image_Edit_example.json
