@@ -22,6 +22,7 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         value={value} 
                         onChange={(val) => onFormChange(param_name, val)} 
                         multiline={inputs['Multiline']}
+                        disabled={isBypassed}
                     />;
             break;
         case 'INT':
@@ -36,12 +37,14 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         max={inputs['max_value']}
                         step={inputs['step']}
                         paramType={param_type}
+                        disabled={isBypassed}
                     />;
             break;
         case 'BOOLEAN':
             inputComponent = <BooleanInput
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
+                        disabled={isBypassed}
                     />;
             break;
         case 'DROPDOWN':
@@ -49,6 +52,7 @@ const renderInput = (input, formData, onFormChange, randomizeState, onRandomizeT
                         value={value}
                         onChange={(val) => onFormChange(param_name, val)}
                         choices={inputs['choices']}
+                        disabled={isBypassed}
                     />;
             break;
         default:
