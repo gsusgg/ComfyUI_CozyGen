@@ -98,7 +98,7 @@ function App() {
   const [formData, setFormData] = useState({});
   const [randomizeState, setRandomizeState] = useState({});
   const [bypassedState, setBypassedState] = useState({});
-  const [previewImage, setPreviewImage] = useState(localStorage.getItem('lastPreviewImage') || null);
+  const [previewImages, setPreviewImages] = useState(JSON.parse(localStorage.getItem('lastPreviewImages')) || []);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const websocketRef = useRef(null);
@@ -120,7 +120,7 @@ function App() {
   // --- WebSocket Connection ---
   useEffect(() => {
     const connectWebSocket = () => {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const protocol = window.location.protocol === 'https' ? 'wss' : 'ws';
       const host = window.location.host;
       const wsUrl = `${protocol}://${host}/ws`;
 
@@ -134,11 +134,11 @@ function App() {
 
         const msg = JSON.parse(event.data);
 
-        if (msg.type === 'cozygen_image_ready' || msg.type === 'cozygen_video_ready') {
-            const url = msg.data.image_url || msg.data.video_url;
-            if (url) {
-                setPreviewImage(url);
-                localStorage.setItem('lastPreviewImage', url);
+        if (msg.type === 'cozygen_batch_ready') {
+            const imageUrls = msg.data.images.map(image => image.url);
+            if (imageUrls.length > 0) {
+                setPreviewImages(imageUrls);
+                localStorage.setItem('lastPreviewImages', JSON.stringify(imageUrls));
             }
             setIsLoading(false);
             setProgressValue(0);
@@ -336,6 +336,7 @@ function App() {
   const handleGenerate = async () => {
     if (!workflowData) return;
     setIsLoading(true);
+    setPreviewImages([]); // Clear previous images
     setStatusText('Queuing prompt...');
 
     try {
@@ -439,8 +440,8 @@ function App() {
   };
 
   const handleClearPreview = () => {
-    setPreviewImage(null);
-    localStorage.removeItem('lastPreviewImage');
+    setPreviewImages([]);
+    localStorage.removeItem('lastPreviewImages');
   };
 
   const hasImageInput = dynamicInputs.some(input => input.class_type === 'CozyGenImageInput');
@@ -460,12 +461,25 @@ function App() {
                             Clear
                         </button>
                     </div>
-                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-2 overflow-y-auto" onClick={() => previewImage && openModalWithImage(previewImage)}>
+                    <div className="flex-grow flex items-center justify-center border-2 border-dashed border-base-300 rounded-lg p-2 overflow-y-auto">
                         {isLoading && <div className="text-center w-full"><p className="text-lg">{statusText}</p></div>}
-                        {!isLoading && !previewImage && (
+                        {!isLoading && previewImages.length === 0 && (
                             <p className="text-gray-400">Your generated image or video will appear here.</p>
                         )}
-                        {!isLoading && previewImage && renderPreviewContent(previewImage)}
+                        {!isLoading && previewImages.length === 1 && (
+                            <div className="w-full h-full flex items-center justify-center cursor-pointer" onClick={() => openModalWithImage(previewImages[0])}>
+                                {renderPreviewContent(previewImages[0])}
+                            </div>
+                        )}
+                        {!isLoading && previewImages.length > 1 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 w-full h-full">
+                                {previewImages.map((src, index) => (
+                                    <div key={index} className="aspect-square bg-base-300 rounded-lg overflow-hidden cursor-pointer" onClick={() => openModalWithImage(src)}>
+                                        {renderPreviewContent(src)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 {/* Generate button moved to sticky footer */}

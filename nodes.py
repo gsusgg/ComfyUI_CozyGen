@@ -135,40 +135,27 @@ class CozyGenOutput(SaveImage):
 
     def save_images(self, images, filename_prefix="CozyGen/output", prompt=None, extra_pnginfo=None):
         results = super().save_images(images, filename_prefix, prompt, extra_pnginfo)
+        server_instance = server.PromptServer.instance
 
-        # Check if images were actually saved
-        if results and 'ui' in results and 'images' in results['ui'] and results['ui']['images']:
-            server_instance = server.PromptServer.instance
-            if server_instance:
-                for saved_image in results['ui']['images']:
-                    saved_filename = saved_image['filename']
-                    subfolder = saved_image['subfolder']
-                    saved_type = saved_image['type']
-
-                    # Construct the URL for the image
-                    image_url = f"/view?filename={saved_filename}&subfolder={subfolder}&type={saved_type}"
-                    
-                    message_data = {
-                        "status": "image_generated",
-                        "image_url": image_url,
-                        "filename": saved_filename,
-                        "subfolder": subfolder,
-                        "type": saved_type
-                    }
-                    server_instance.send_sync("cozygen_image_ready", message_data)
-                    print(f"CozyGen: Sent custom WebSocket message: {{'type': 'cozygen_image_ready', 'data': {message_data}}}")
-        else:
-            # No new image was generated (e.g., duplicate prompt)
-            message_data = {
-                "status": "no_new_image"
-            }
-            server_instance = server.PromptServer.instance
-            if server_instance:
-                server_instance.send_sync("cozygen_image_ready", message_data)
-                print(f"CozyGen: Sent custom WebSocket message: {{'type': 'cozygen_image_ready', 'data': {message_data}}}")
-
+        if server_instance and results and 'ui' in results and 'images' in results['ui']:
+            batch_images_data = []
+            for saved_image in results['ui']['images']:
+                image_url = f"/view?filename={saved_image['filename']}&subfolder={saved_image['subfolder']}&type={saved_image['type']}"
+                batch_images_data.append({
+                    "url": image_url,
+                    "filename": saved_image['filename'],
+                    "subfolder": saved_image['subfolder'],
+                    "type": saved_image['type']
+                })
             
-        
+            if batch_images_data:
+                message_data = {
+                    "status": "images_generated",
+                    "images": batch_images_data
+                }
+                server_instance.send_sync("cozygen_batch_ready", message_data)
+                print(f"CozyGen: Sent batch WebSocket message: {message_data}")
+
         return results
 
 

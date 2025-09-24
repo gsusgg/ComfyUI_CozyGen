@@ -25,7 +25,10 @@
         "58",
         0
       ],
-      "batch_size": 1
+      "batch_size": [
+        "80",
+        0
+      ]
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -465,6 +468,21 @@
     "class_type": "CozyGenFloatInput",
     "_meta": {
       "title": "CozyGen Float Input"
+    }
+  },
+  "80": {
+    "inputs": {
+      "param_name": "Batch Size",
+      "priority": 30,
+      "default_value": 1,
+      "min_value": 0,
+      "max_value": 2048,
+      "step": 1,
+      "add_randomize_toggle": false
+    },
+    "class_type": "CozyGenIntInput",
+    "_meta": {
+      "title": "CozyGen Int Input"
     }
   }
 }
