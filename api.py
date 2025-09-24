@@ -140,31 +140,28 @@ alias_map = {
 
 async def get_choices(request: web.Request) -> web.Response:
     choice_type = request.rel_url.query.get('type', '')
-    print(f"[CozyGen Debug] Received get_choices request for type: {choice_type}") # DEBUG
 
     if not choice_type:
         return web.json_response({"error": "Missing 'type' query parameter"}, status=400)
 
-    # Resolve alias
+    # Alias map for backward compatibility
+    alias_map = {
+        "samplers_list": "sampler",
+        "schedulers_list": "scheduler",
+        "unet": "unet_gguf" # Example of another potential alias
+    }
     resolved_choice_type = alias_map.get(choice_type, choice_type)
 
     choices = []
-    print(f"[CozyGen Debug] Valid model types are: {list(valid_model_types)}") # DEBUG
-
     if resolved_choice_type == "scheduler":
-        print("[CozyGen Debug] Handling as SCHEDULER type.") # DEBUG
         choices = comfy.samplers.KSampler.SCHEDULERS
     elif resolved_choice_type == "sampler":
-        print("[CozyGen Debug] Handling as SAMPLER type.") # DEBUG
         choices = comfy.samplers.KSampler.SAMPLERS
     elif resolved_choice_type in valid_model_types:
-        print(f"[CozyGen Debug] Handling as a valid model folder type: {resolved_choice_type}") # DEBUG
         choices = folder_paths.get_filename_list(resolved_choice_type)
     else:
-        print(f"[CozyGen Debug] ERROR: choice_type '{choice_type}' (resolved to '{resolved_choice_type}') is not a special type or a valid model folder.") # DEBUG
         return web.json_response({"error": f"Invalid choice type: {choice_type}"}, status=400)
     
-    print(f"[CozyGen Debug] Found choices: {choices}") # DEBUG
     return web.json_response({"choices": choices})
 
 routes = [

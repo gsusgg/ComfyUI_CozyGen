@@ -269,18 +269,16 @@ function App() {
             const param_name = input.inputs['param_name'];
             if (savedFormData[param_name] === undefined) {
                 let defaultValue;
-                if (input.class_type === 'CozyGenDynamicInput') {
+                if (['CozyGenDynamicInput', 'CozyGenFloatInput', 'CozyGenIntInput', 'CozyGenStringInput'].includes(input.class_type)) {
                     defaultValue = input.inputs['default_value'];
-                    // Convert default value to correct type if necessary
-                    if (input.inputs['param_type'] === 'INT') {
-                        defaultValue = parseInt(defaultValue);
-                    } else if (input.inputs['param_type'] === 'FLOAT') {
+                    if (input.class_type === 'CozyGenIntInput') {
+                        defaultValue = parseInt(defaultValue, 10);
+                    } else if (input.class_type === 'CozyGenFloatInput') {
                         defaultValue = parseFloat(defaultValue);
-                    } else if (input.inputs['param_type'] === 'BOOLEAN') {
-                        defaultValue = String(defaultValue).toLowerCase() === 'true';
                     }
+                } else if (input.class_type === 'CozyGenChoiceInput') {
+                    defaultValue = input.inputs.choices && input.inputs.choices.length > 0 ? input.inputs.choices[0] : '';
                 } else if (input.class_type === 'CozyGenImageInput') {
-                    // Default for CozyGenImageInput is now an empty string for the base64_image
                     defaultValue = '';
                 }
                 initialFormData[param_name] = defaultValue;
@@ -344,19 +342,33 @@ function App() {
         let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
         // --- Bypass and Value Injection Logic (condensed for brevity) ---
-        const bypassedDynamicNodes = dynamicInputs.filter(dn => bypassedState[dn.inputs.param_name] && dn.class_type === 'CozyGenDynamicInput');
-        for (const dynamicNode of bypassedDynamicNodes) {
-            let targetNodeId = Object.keys(finalWorkflow).find(id => Object.values(finalWorkflow[id].inputs).some(input => Array.isArray(input) && input[0] === dynamicNode.id));
+        const COZYGEN_INPUT_TYPES_WITH_BYPASS = ['CozyGenDynamicInput', 'CozyGenChoiceInput'];
+        const bypassedNodes = dynamicInputs.filter(dn => bypassedState[dn.inputs.param_name] && COZYGEN_INPUT_TYPES_WITH_BYPASS.includes(dn.class_type));
+        
+        for (const bypassedNode of bypassedNodes) {
+            // Find the node that our CozyGen input is connected to (e.g., a LoraLoader).
+            let targetNodeId = Object.keys(finalWorkflow).find(id => 
+                Object.values(finalWorkflow[id].inputs).some(input => Array.isArray(input) && input[0] === bypassedNode.id)
+            );
+
             if (!targetNodeId) continue;
+
             const targetNode = finalWorkflow[targetNodeId];
+
+            // Find the "real" upstream input to the target node (e.g., the model output from a previous loader).
+            // This is the input we want to connect *past* the bypassed node.
             const upstreamSources = {};
             for (const inputName in targetNode.inputs) {
                 const input = targetNode.inputs[inputName];
-                if (Array.isArray(input) && finalWorkflow[input[0]] && finalWorkflow[input[0]].class_type !== 'CozyGenDynamicInput') {
+                if (Array.isArray(input) && finalWorkflow[input[0]] && !COZYGEN_INPUT_TYPES_WITH_BYPASS.includes(finalWorkflow[input[0]].class_type)) {
                     upstreamSources[inputName] = input;
                 }
             }
+
+            // If there's no other upstream source, we can't bypass.
             if (Object.keys(upstreamSources).length === 0) continue;
+
+            // Find all nodes that are connected to our target node.
             const downstreamConnections = [];
             for (const nodeId in finalWorkflow) {
                 for (const inputName in finalWorkflow[nodeId].inputs) {
@@ -366,14 +378,20 @@ function App() {
                     }
                 }
             }
+
+            // Rewire the downstream connections to point to the upstream source, skipping the target.
             for (const conn of downstreamConnections) {
+                // The input name on the downstream node should match the input name on the target node
+                // that had the upstream source. E.g., 'MODEL' -> 'MODEL'.
                 const upstreamSource = upstreamSources[conn.inputName];
                 if (upstreamSource) {
                     finalWorkflow[conn.nodeId].inputs[conn.inputName] = upstreamSource;
                 }
             }
+
+            // Delete the bypassed nodes from the workflow.
             delete finalWorkflow[targetNodeId];
-            delete finalWorkflow[dynamicNode.id];
+            delete finalWorkflow[bypassedNode.id];
         }
 
         let updatedFormData = { ...formData };
@@ -385,13 +403,13 @@ function App() {
                 ? (dynamicNode.inputs.param_type === 'FLOAT' ? Math.random() * ((dynamicNode.inputs.max_value || 1000000) - (dynamicNode.inputs.min_value || 0)) + (dynamicNode.inputs.min_value || 0) : Math.floor(Math.random() * ((dynamicNode.inputs.max_value || 1000000) - (dynamicNode.inputs.min_value || 0) + 1)) + (dynamicNode.inputs.min_value || 0))
                 : formData[param_name];
             updatedFormData[param_name] = valueToInject;
-            // (Type conversion logic omitted for brevity, but is present)
-            for (const nodeId in finalWorkflow) {
-                for (const inputName in finalWorkflow[nodeId].inputs) {
-                    const input = finalWorkflow[nodeId].inputs[inputName];
-                    if (Array.isArray(input) && input[0] === dynamicNode.id) {
-                        finalWorkflow[nodeId].inputs[inputName] = valueToInject;
-                    }
+
+            const nodeToUpdate = finalWorkflow[dynamicNode.id];
+            if (nodeToUpdate) {
+                if (['CozyGenFloatInput', 'CozyGenIntInput', 'CozyGenStringInput', 'CozyGenDynamicInput'].includes(dynamicNode.class_type)) {
+                    nodeToUpdate.inputs.default_value = valueToInject;
+                } else if (dynamicNode.class_type === 'CozyGenChoiceInput') {
+                    nodeToUpdate.inputs.value = valueToInject;
                 }
             }
         });

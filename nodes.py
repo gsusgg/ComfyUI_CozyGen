@@ -283,7 +283,7 @@ class CozyGenIntInput:
                 "priority": ("INT", {"default": 10}),
                 "default_value": ("INT", {"default": 1}),
                 "min_value": ("INT", {"default": 0}),
-                "max_value": ("INT", {"default": 1024}),
+                "max_value": ("INT", {"default": 9999999999}),
                 "step": ("INT", {"default": 1}),
                 "add_randomize_toggle": ("BOOLEAN", {"default": False}),
             }
@@ -315,22 +315,55 @@ class CozyGenChoiceInput:
     _NODE_CLASS_NAME = "CozyGenChoiceInput"
     @classmethod
     def INPUT_TYPES(cls):
+        # Create a flat list of all possible choices for the initial dropdown
+        all_choices = []
+        for choice_type in all_choice_types:
+            if choice_type == "sampler":
+                all_choices.extend(comfy.samplers.KSampler.SAMPLERS)
+            elif choice_type == "scheduler":
+                all_choices.extend(comfy.samplers.KSampler.SCHEDULERS)
+            else:
+                try:
+                    all_choices.extend(folder_paths.get_filename_list(choice_type))
+                except KeyError:
+                    pass # Ignore choice types that don't have a corresponding folder
+        # Add a "None" option to be safe
+        all_choices = ["None"] + sorted(list(set(all_choices)))
+
         return {
             "required": {
                 "param_name": ("STRING", {"default": "Choice Parameter"}),
                 "priority": ("INT", {"default": 10}),
                 "choice_type": (all_choice_types,),
+                "default_choice": (all_choices,),
                 "display_bypass": ("BOOLEAN", {"default": False}),
             },
             "hidden": {
-                "value": ("STRING", { "default": "" })
+                "value": ("STRING", { "default": "" }) # This is the value from the web UI
             }
         }
+
     RETURN_TYPES = (node_typing.IO.ANY,)
     FUNCTION = "get_value"
     CATEGORY = "CozyGen/Static"
-    def get_value(self, param_name, priority, choice_type, display_bypass, value):
-        return (value,)
+
+    def get_value(self, param_name, priority, choice_type, default_choice, display_bypass, value):
+        # The `value` parameter comes from the frontend UI on generation.
+        # If it's present, we use it. Otherwise, we use the default set in the node graph.
+        final_value = value if value and value != "None" else default_choice
+
+        # If the final value is still None or empty, try to get a fallback
+        if not final_value or final_value == "None":
+            if choice_type == "sampler":
+                return (comfy.samplers.KSampler.SAMPLERS[0],)
+            elif choice_type == "scheduler":
+                return (comfy.samplers.KSampler.SCHEDULERS[0],)
+            else:
+                choices = folder_paths.get_filename_list(choice_type)
+                if choices:
+                    return (choices[0],)
+        
+        return (final_value,)
 
 NODE_CLASS_MAPPINGS = {
     "CozyGenOutput": CozyGenOutput,
