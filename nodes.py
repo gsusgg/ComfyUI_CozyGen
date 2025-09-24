@@ -283,7 +283,7 @@ class CozyGenIntInput:
                 "priority": ("INT", {"default": 10}),
                 "default_value": ("INT", {"default": 1}),
                 "min_value": ("INT", {"default": 0}),
-                "max_value": ("INT", {"default": 9999999999}),
+                "max_value": ("INT", {"default": 9999999999, "max": 9999999999}),
                 "step": ("INT", {"default": 1}),
                 "add_randomize_toggle": ("BOOLEAN", {"default": False}),
             }
