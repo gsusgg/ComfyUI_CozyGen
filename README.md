@@ -8,9 +8,22 @@ This project was 100% "vibe-coded" using Gemini 2.5 Pro/Flash. I dont code, but 
 
 Known Issues:
 
-*  If you use a batch higher than 1 they will generate and show in the gallery, but the preview only displays the first image of the batch.
+*  The default_choice option on the "Choice Input Node" does not work, but you will only need to select it the first time in the front end and it will save in your browser cache. Just make sure the choice_type is correct.
+*  If the front end web page is not "active" when generation completes, the preview will not display. The image will be in the gallery.
 
 Changelog:
+*  9/24/2025 - Update 2
+
+    * Added mp4/gif output support with the "CozyGen Video Output" node
+    * Broke out the Dynamic input node to reduce complexity. DynamicInput still functions, but these can be used if you want to have values saved when loading the workflow again in ComfyUI. Choice options are still weird, you need to specify the folder the model is in and the front end will fill the drop down control with those models. 4 new nodes:
+         * CozyGen Int Input
+         * CozyGen Float Input
+         * CozyGen String Input
+         * CozyGen Choice Input
+    * Improved Generate page with a static generate button and styling tweaks
+    * Improved choice bypass option, allowing you to bypass lora loaders from the front end. You can now bypass loras in a chain of loras as seen in the Flux example workflow.
+	* Generating a batch greater than 1 now displays all generated images in the image preview
+	
 *  9/11/2025 - Update 1
 	*NOTE* This update will require you to remake workflows if you already had some. If you run into weird issues, try a complete reinstall if you are upgrading.
 
