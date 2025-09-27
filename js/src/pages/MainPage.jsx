@@ -342,6 +342,25 @@ function App() {
     try {
         let finalWorkflow = JSON.parse(JSON.stringify(workflowData));
 
+        // --- Bypass logic for Image Inputs (Simplified) ---
+        const bypassedImageNodes = dynamicInputs.filter(dn => bypassedState[dn.inputs.param_name] && dn.class_type === 'CozyGenImageInput');
+        for (const bypassedNode of bypassedImageNodes) {
+            // When an image input is bypassed, just remove it.
+            // The workflow should be constructed to handle this (e.g., have a separate default path).
+            if (finalWorkflow[bypassedNode.id]) {
+                // To prevent crashes, we also need to nullify any inputs that point to this node.
+                for (const nodeId in finalWorkflow) {
+                    for (const inputName in finalWorkflow[nodeId].inputs) {
+                        const input = finalWorkflow[nodeId].inputs[inputName];
+                        if (Array.isArray(input) && input[0] === bypassedNode.id) {
+                            finalWorkflow[nodeId].inputs[inputName] = null;
+                        }
+                    }
+                }
+                delete finalWorkflow[bypassedNode.id];
+            }
+        }
+
         // --- Bypass and Value Injection Logic (condensed for brevity) ---
         const COZYGEN_INPUT_TYPES_WITH_BYPASS = ['CozyGenDynamicInput', 'CozyGenChoiceInput'];
         const bypassedNodes = dynamicInputs.filter(dn => bypassedState[dn.inputs.param_name] && COZYGEN_INPUT_TYPES_WITH_BYPASS.includes(dn.class_type));
@@ -419,6 +438,11 @@ function App() {
 
         const imageInputNodes = dynamicInputs.filter(dn => dn.class_type === 'CozyGenImageInput');
         for (const node of imageInputNodes) {
+            // Skip validation if the node is bypassed
+            if (bypassedState[node.inputs.param_name]) {
+                continue;
+            }
+
             const image_filename = formData[node.inputs.param_name];
             if (!image_filename) {
                 alert(`Please upload an image for "${node.inputs.param_name}" before generating.`);
@@ -531,6 +555,8 @@ function App() {
                         input={input}
                         value={formData[input.inputs.param_name]}
                         onFormChange={handleFormChange}
+                        onBypassToggle={handleBypassToggle}
+                        disabled={bypassedState[input.inputs.param_name] || false}
                     />
                 ))}
             </div>

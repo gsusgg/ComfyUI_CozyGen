@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getGallery, uploadImage } from '../api';
 
-const ImageInput = ({ input, value, onFormChange }) => {
+const ImageInput = ({ input, value, onFormChange, onBypassToggle, disabled }) => {
     const [imageSource, setImageSource] = useState(value?.source || 'Upload'); // 'Upload' or 'Gallery'
     const [selectedGalleryImage, setSelectedGalleryImage] = useState(value?.path || '');
     const [uploadedFile, setUploadedFile] = useState(null);
@@ -85,6 +85,16 @@ const ImageInput = ({ input, value, onFormChange }) => {
         onFormChange(input.inputs.param_name, { source: 'Upload', path: '', url: '' });
     };
 
+    const handleCozyGenClear = () => {
+        setPreviewUrl('');
+        // Also clear the file input element itself
+        const uploader = document.getElementById(`cozyGenImageUploader-${input.id}`);
+        if (uploader) {
+            uploader.value = null;
+        }
+        onFormChange(input.inputs.param_name, '');
+    };
+
     const handleCozyGenFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -145,26 +155,42 @@ const ImageInput = ({ input, value, onFormChange }) => {
 
     return (
         <div className="form-control mb-4 p-3 bg-base-200 rounded-box shadow-lg">
-            <label className="label">
-                <span className="label-text text-lg font-semibold">{input.inputs.param_name}</span>
-            </label>
+            <div className="label flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                    <span className="label-text text-lg font-semibold">{input.inputs.param_name}</span>
+                    <span className="text-xs text-gray-400">
+                        (Bypass
+                        <input
+                            type="checkbox"
+                            className="toggle toggle-sm toggle-accent ml-1"
+                            checked={disabled}
+                            onChange={(e) => onBypassToggle(input.inputs.param_name, e.target.checked)}
+                        />)
+                    </span>
+                </div>
+                {input.class_type === 'CozyGenImageInput' && !disabled && (
+                    <button onClick={handleCozyGenClear} className="btn btn-xs btn-outline" disabled={disabled}>Clear</button>
+                )}
+            </div>
 
             {input.class_type === 'CozyGenImageInput' ? (
-                <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                    {/* Left Column: File Input and Smart Resize */}
+                <div className={`flex flex-col sm:flex-row items-center gap-4 ${disabled ? 'opacity-50' : ''}`}>
                     <div className="flex-grow w-full sm:w-auto">
-                        <input
-                            type="file"
-                            id={`cozyGenImageUploader-${input.id}`} // Unique ID for each input
-                            accept="image/png, image/jpeg, image/webp"
-                            onChange={handleCozyGenFileChange}
-                            className="file-input file-input-bordered w-full mb-2"
-                        />
-                        <div class="form-control">
-                            <label class="label cursor-pointer">
-                                <span class="label-text">Smart Resize</span> 
-                                <input type="checkbox" class="toggle" checked={smartResize} onChange={() => setSmartResize(!smartResize)} />
-                            </label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="file"
+                                id={`cozyGenImageUploader-${input.id}`}
+                                accept="image/png, image/jpeg, image/webp"
+                                onChange={handleCozyGenFileChange}
+                                className="file-input file-input-bordered w-full max-w-xs"
+                                disabled={disabled}
+                            />
+                            <div className="form-control flex-row items-center justify-end">
+                                <label className="label cursor-pointer flex items-center gap-2">
+                                    <span className="label-text whitespace-nowrap">Smart Resize</span>
+                                    <input type="checkbox" className="toggle" checked={smartResize} onChange={() => setSmartResize(!smartResize)} disabled={disabled} />
+                                </label>
+                            </div>
                         </div>
                     </div>
                     {/* Right Column: Image Preview Thumbnail */}
